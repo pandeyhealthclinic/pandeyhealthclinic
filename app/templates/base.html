@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{{ CLINIC_NAME }} — {{ CLINIC_TAGLINE }}{% endblock %}</title>
+<meta name="description" content="{{ CLINIC_NAME }} in Gaya, Bihar — book appointments, consult {{ DOCTOR_NAME }} online or in person, and order medicines. {{ CLINIC_TAGLINE }}.">
+<meta property="og:title" content="{{ CLINIC_NAME }}">
+<meta property="og:description" content="Modern, trustworthy healthcare in Gaya, Bihar.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="{{ request.url }}">
+<link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div id="pageProgressBar" class="page-progress-bar"></div>
+{% include "partials/navbar.html" %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="toast-stack" id="toastStack">
+    {% for category, message in messages %}
+    <div class="toast toast-{{ category }}" role="status">
+      <span class="toast-icon">{{ '✓' if category == 'info' else '!' }}</span>
+      <span class="toast-text">{{ message }}</span>
+      <button type="button" class="toast-close" onclick="this.parentElement.remove()" aria-label="Dismiss">×</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+<main>
+{% block content %}{% endblock %}
+</main>
+{% include "partials/footer.html" %}
+{% if FIREBASE_READY %}
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  window.__firebaseApp = initializeApp({{ FIREBASE_CLIENT_CONFIG | tojson }});
+</script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

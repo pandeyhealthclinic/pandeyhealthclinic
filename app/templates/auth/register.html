@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Create Account — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<noscript>
+  <section style="max-width:440px; margin:2rem auto 0;">
+    <div class="auth-notice">This page requires JavaScript to create an account securely. Please enable it in your browser settings.</div>
+  </section>
+</noscript>
+<section class="auth-section">
+  <div class="auth-card">
+    <p class="eyebrow eyebrow-dark">New Patient</p>
+    <h1>Create your account</h1>
+    <p>Set up your profile once — book appointments and order medicines any time after.</p>
+
+    {% if not FIREBASE_READY %}
+    <div class="auth-notice">Patient accounts aren't live yet — the clinic is still setting up Firebase. Check back soon.</div>
+    {% endif %}
+
+    <form id="registerForm" method="post">
+      <label>Full Name
+        <input type="text" name="name" required autocomplete="name">
+      </label>
+      <label>Phone Number
+        <input type="tel" name="phone" required autocomplete="tel">
+      </label>
+      <label>Email
+        <input type="email" name="email" required autocomplete="email">
+      </label>
+      <label>Password
+        <input type="password" name="password" required minlength="6" autocomplete="new-password">
+      </label>
+      <p class="form-status" role="status"></p>
+      <button type="submit" class="btn btn-dark btn-pill btn-block">Create Account</button>
+    </form>
+
+    <p class="auth-footnote">
+      Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+    </p>
+  </div>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script type="module" src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

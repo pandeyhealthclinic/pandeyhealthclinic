@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="dashboard">
+  {% include "partials/patient_subnav.html" %}
+  <div class="dashboard-header">
+    <div>
+      <p class="eyebrow eyebrow-dark">Patient Dashboard</p>
+      <h1>Welcome{{ ', ' + user.name if user and user.name else '' }}</h1>
+      <p>{{ user.email if user else '' }}</p>
+    </div>
+    <div class="dashboard-actions">
+      <a href="{{ url_for('patient.profile_edit') }}" class="btn btn-outline btn-pill">Edit Profile</a>
+      <form action="{{ url_for('auth.logout') }}" method="post" style="display:inline;">
+        <button type="submit" class="btn btn-dark btn-pill">Log Out</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="dashboardLists" data-refresh-url="{{ url_for('patient.dashboard_refresh') }}" data-refresh-interval="6000">
+    {% include "patient/_dashboard_lists.html" %}
+  </div>
+</section>
+{% endblock %}

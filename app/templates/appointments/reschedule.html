@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Reschedule Appointment — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="booking-section">
+  {% include "partials/patient_subnav.html" %}
+  <p class="eyebrow eyebrow-dark">Reschedule</p>
+  <h1>{{ appointment.service_name }}</h1>
+  <p>Currently booked for {{ appointment.date }} at {{ appointment.time }}.</p>
+
+  <form method="post" class="booking-form">
+    <div class="booking-grid">
+      <label>New Date
+        <input type="date" name="date" min="{{ min_date }}" required>
+      </label>
+      <label>New Time
+        <select name="time" required>
+          <option value="">Select a time</option>
+          {% for slot in time_slots %}
+          <option value="{{ slot }}">{{ slot }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <button type="submit" class="btn btn-dark btn-pill btn-block">Confirm New Time</button>
+  </form>
+  <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline btn-pill" style="margin-top:1rem;">Cancel</a>
+</section>
+{% endblock %}

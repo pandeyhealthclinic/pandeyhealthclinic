@@ -1,0 +1,41 @@
+{% extends "admin/layout.html" %}
+{% block title %}Medicines — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Manage</p>
+    <h1>Medicines</h1>
+  </div>
+  <a href="{{ url_for('admin.medicine_new') }}" class="btn btn-dark btn-pill">+ Add Medicine</a>
+</div>
+
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Category</th><th>MRP</th><th>Offer</th><th>Stock</th><th>Rx</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for m in medicines %}
+      <tr>
+        <td>{{ m.name }}</td>
+        <td>{{ m.category }}</td>
+        <td>₹{{ m.mrp }}</td>
+        <td>₹{{ m.offer_price }}</td>
+        <td>
+          {% if m.stock <= 0 %}<span class="status-pill status-cancelled">Out</span>
+          {% elif m.stock <= 10 %}<span class="status-pill status-pending">{{ m.stock }} left</span>
+          {% else %}{{ m.stock }}{% endif %}
+        </td>
+        <td>{{ 'Yes' if m.prescription_required else 'No' }}</td>
+        <td class="table-actions">
+          <a href="{{ url_for('admin.medicine_edit', medicine_id=m.id) }}" class="link-btn">Edit</a>
+          <form action="{{ url_for('admin.medicine_delete', medicine_id=m.id) }}" method="post" onsubmit="return confirm('Delete this medicine?');">
+            <button type="submit" class="link-btn link-btn--danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No medicines yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

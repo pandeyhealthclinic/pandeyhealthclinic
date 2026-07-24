@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="dashboard">
+  {% include "partials/patient_subnav.html" %}
+  <p class="eyebrow eyebrow-dark">Edit Profile</p>
+  <h1>Update your details</h1>
+
+  <form method="post" class="booking-form" style="max-width:480px; background:var(--paper); padding:2rem; border-radius:var(--radius-lg); box-shadow:var(--shadow-card);">
+    <label>Name
+      <input type="text" name="name" value="{{ user.name|default('') }}" required>
+    </label>
+    <label>Phone
+      <input type="tel" name="phone" value="{{ user.phone|default('') }}" required>
+    </label>
+    <label>Email
+      <input type="email" value="{{ user.email|default('') }}" disabled style="opacity:0.6;">
+    </label>
+    <p style="font-size:0.8rem; color:var(--ink-soft); margin:0;">Email is tied to your login and can't be changed here.</p>
+    <div style="display:flex; gap:1rem;">
+      <button type="submit" class="btn btn-dark btn-pill">Save Changes</button>
+      <a href="{{ url_for('patient.profile') }}" class="btn btn-outline btn-pill">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Book an Appointment — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="booking-section">
+  {% include "partials/patient_subnav.html" %}
+  <p class="eyebrow eyebrow-dark">Book an Appointment</p>
+  <h1>Choose a service, date, and time</h1>
+  <p>{{ DOCTOR_NAME }} will confirm your appointment shortly after booking.</p>
+
+  <form method="post" enctype="multipart/form-data" class="booking-form">
+    <div class="booking-grid">
+      <label>Service
+        <select name="service_id" required>
+          <option value="">Select a service</option>
+          {% for s in services %}
+          <option value="{{ s.id }}" {% if s.id == preselected %}selected{% endif %}>{{ s.name }} — ₹{{ s.price }} ({{ s.duration }})</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>Consultation Type
+        <select name="consultation_type" required>
+          <option value="offline" {% if preselected_type == 'offline' %}selected{% endif %}>In-Clinic (Offline)</option>
+          <option value="online" {% if preselected_type == 'online' %}selected{% endif %}>Online (Video/Audio/Chat)</option>
+        </select>
+      </label>
+
+      <label>Date
+        <input type="date" name="date" min="{{ min_date }}" required>
+      </label>
+
+      <label>Time
+        <select name="time" required>
+          <option value="">Select a time</option>
+          {% for slot in time_slots %}
+          <option value="{{ slot }}">{{ slot }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+
+    <label>Symptoms / Reason for Visit
+      <textarea name="symptoms" rows="4" placeholder="Briefly describe what's bothering you..."></textarea>
+    </label>
+
+    <label>Upload Previous Reports (optional)
+      <input type="file" name="report" accept=".pdf,.png,.jpg,.jpeg,.webp">
+    </label>
+
+    <button type="submit" class="btn btn-dark btn-pill btn-block">Request Appointment</button>
+  </form>
+</section>
+{% endblock %}

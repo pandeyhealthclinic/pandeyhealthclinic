@@ -1,0 +1,32 @@
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Patient</th><th>Items</th><th>Total</th><th>Payment</th><th>Rx?</th><th>Status</th><th>Update</th></tr></thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td>{{ o.patient_name|default('—') }}<br><span style="font-weight:400;color:var(--ink-soft);">{{ o.patient_phone|default('') }}</span></td>
+        <td>
+          {% for item in o['items']|default([]) %}
+          {{ item.name }} ×{{ item.qty }}{% if not loop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+        <td>₹{{ o.total|default(0) }}</td>
+        <td>{{ o.payment_method|default('cod')|upper }}</td>
+        <td>{{ 'Yes' if o.needs_prescription else 'No' }}</td>
+        <td><span class="status-pill status-{{ o.status|default('pending') }}">{{ o.status|default('pending') }}</span></td>
+        <td class="table-actions">
+          <form action="{{ url_for('admin.order_status', order_id=o.id) }}" method="post">
+            <select name="status" onchange="this.form.submit()">
+              {% for s in ['pending','confirmed','packed','dispatched','delivered','cancelled','refunded'] %}
+              <option value="{{ s }}" {% if o.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No orders found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

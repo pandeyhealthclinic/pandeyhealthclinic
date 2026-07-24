@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Your Cart — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="store-section">
+  {% include "partials/patient_subnav.html" %}
+  <p class="eyebrow eyebrow-dark">Your Cart</p>
+  <h1>Review your order</h1>
+
+  <div class="order-steps">
+    <div class="order-step is-active"><span>1</span>Cart</div>
+    <div class="order-step-line"></div>
+    <div class="order-step"><span>2</span>Checkout</div>
+    <div class="order-step-line"></div>
+    <div class="order-step"><span>3</span>Confirmation</div>
+  </div>
+
+  {% if items %}
+  <div class="cart-list">
+    {% for item in items %}
+    <div class="cart-row">
+      <img src="{{ image_url(item.medicine.image) }}" alt="{{ item.medicine.name }}" onerror="this.src='https://placehold.co/90x90/DCE6DE/0E3B32?text=Rx'">
+      <div class="cart-row-info">
+        <h4>{{ item.medicine.name }}</h4>
+        <p>₹{{ item.medicine.offer_price }} each</p>
+      </div>
+
+      <div class="qty-stepper">
+        <form action="{{ url_for('medicines.update_cart') }}" method="post">
+          <input type="hidden" name="medicine_id" value="{{ item.medicine.id }}">
+          <input type="hidden" name="qty" value="{{ item.qty - 1 }}">
+          <button type="submit" class="stepper-btn" aria-label="Decrease quantity">−</button>
+        </form>
+        <span class="stepper-value">{{ item.qty }}</span>
+        <form action="{{ url_for('medicines.update_cart') }}" method="post">
+          <input type="hidden" name="medicine_id" value="{{ item.medicine.id }}">
+          <input type="hidden" name="qty" value="{{ item.qty + 1 }}">
+          <button type="submit" class="stepper-btn" aria-label="Increase quantity" {% if item.qty >= item.medicine.stock %}disabled{% endif %}>+</button>
+        </form>
+      </div>
+
+      <span class="cart-line-total">₹{{ item.line_total }}</span>
+      <form action="{{ url_for('medicines.remove_cart_item') }}" method="post">
+        <input type="hidden" name="medicine_id" value="{{ item.medicine.id }}">
+        <button type="submit" class="link-btn link-btn--danger">Remove</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="order-summary-card">
+    <div class="summary-line"><span>Subtotal</span><span>₹{{ total }}</span></div>
+    <div class="summary-line"><span>Delivery</span><span>Confirmed at checkout</span></div>
+    <div class="summary-line summary-total"><span>Total</span><span>₹{{ total }}</span></div>
+  </div>
+  <a href="{{ url_for('medicines.checkout') }}" class="btn btn-dark btn-pill btn-block">Proceed to Checkout →</a>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">🛒</div>
+    <h3>Your cart is empty</h3>
+    <p>Browse the pharmacy to add tablets, syrups, supplements, and more.</p>
+    <a href="{{ url_for('medicines.store') }}" class="btn btn-dark btn-pill">Browse Medicines</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

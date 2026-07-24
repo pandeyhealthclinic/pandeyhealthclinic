@@ -1,0 +1,42 @@
+{% extends "admin/layout.html" %}
+{% block title %}Testimonials — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Moderate</p>
+    <h1>Testimonials</h1>
+  </div>
+</div>
+
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Rating</th><th>Text</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for t in testimonials %}
+      <tr>
+        <td>{{ t.name }}</td>
+        <td>{{ '★' * t.rating }}</td>
+        <td style="white-space:normal; max-width:320px;">{{ t.text }}</td>
+        <td><span class="status-pill status-{{ 'approved' if t.approved else 'rejected' }}">{{ 'Approved' if t.approved else 'Hidden' }}</span></td>
+        <td class="table-actions">
+          {% if t.id %}
+          {% if not t.approved %}
+          <form action="{{ url_for('admin.testimonial_approve', testimonial_id=t.id) }}" method="post"><button type="submit" class="link-btn">Approve</button></form>
+          {% else %}
+          <form action="{{ url_for('admin.testimonial_reject', testimonial_id=t.id) }}" method="post"><button type="submit" class="link-btn">Hide</button></form>
+          {% endif %}
+          <form action="{{ url_for('admin.testimonial_delete', testimonial_id=t.id) }}" method="post" onsubmit="return confirm('Delete this testimonial?');">
+            <button type="submit" class="link-btn link-btn--danger">Delete</button>
+          </form>
+          {% else %}
+          <span style="color:var(--ink-soft); font-size:0.8rem;">Seed data — connect Firebase to manage</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">No testimonials yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Log In — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<noscript>
+  <section style="max-width:440px; margin:2rem auto 0;">
+    <div class="auth-notice">This page requires JavaScript to sign in securely. Please enable it in your browser settings.</div>
+  </section>
+</noscript>
+<section class="auth-section">
+  <div class="auth-card">
+    <p class="eyebrow eyebrow-dark">Welcome Back</p>
+    <h1>Log in to your account</h1>
+    <p>Book appointments, view prescriptions, and track orders.</p>
+
+    {% if not FIREBASE_READY %}
+    <div class="auth-notice">Patient accounts aren't live yet — the clinic is still setting up Firebase. Check back soon.</div>
+    {% endif %}
+
+    <form id="loginForm" method="post" data-next="{{ next_url|default('') }}">
+      <label>Email
+        <input type="email" name="email" required autocomplete="email">
+      </label>
+      <label>Password
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+      <p class="form-status" role="status"></p>
+      <button type="submit" class="btn btn-dark btn-pill btn-block">Log In</button>
+    </form>
+
+    <div class="auth-divider"><span>or</span></div>
+
+    <button type="button" class="btn btn-outline btn-pill btn-block" onclick="clinicAuth.handleGoogleLogin({{ next_url|default('')|tojson }})">
+      Continue with Google
+    </button>
+
+    <p class="auth-footnote">
+      <a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
+      &middot;
+      New here? <a href="{{ url_for('auth.register') }}">Create an account</a>
+    </p>
+  </div>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script type="module" src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

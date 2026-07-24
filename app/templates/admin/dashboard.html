@@ -1,0 +1,72 @@
+{% extends "admin/layout.html" %}
+{% block title %}Dashboard — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Overview</p>
+    <h1>Clinic Dashboard</h1>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-number">{{ stats.total_patients }}</div>
+    <div class="stat-label">Registered Patients</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ stats.pending_appointments }}</div>
+    <div class="stat-label">Pending Appointments</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">₹{{ stats.total_revenue }}</div>
+    <div class="stat-label">Total Order Revenue</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ stats.low_stock_medicines }}</div>
+    <div class="stat-label">Low Stock Medicines (≤10)</div>
+  </div>
+</div>
+
+<div class="admin-grid-2">
+  <div>
+    <h3>Recent Appointments</h3>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>Patient</th><th>Service</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for a in recent_appointments %}
+          <tr>
+            <td>{{ a.patient_name|default('—') }}</td>
+            <td>{{ a.service_name|default('—') }}</td>
+            <td>{{ a.date|default('—') }} {{ a.time|default('') }}</td>
+            <td><span class="status-pill status-{{ a.status|default('pending') }}">{{ a.status|default('pending') }}</span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4">No appointments yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <h3>Recent Orders</h3>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>Patient</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for o in recent_orders %}
+          <tr>
+            <td>{{ o.patient_name|default('—') }}</td>
+            <td>₹{{ o.total|default(0) }}</td>
+            <td><span class="status-pill status-{{ o.status|default('pending') }}">{{ o.status|default('pending') }}</span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3">No orders yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "admin/layout.html" %}
+{% block title %}{{ 'Edit' if service else 'Add' }} Service — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">{{ 'Edit' if service else 'Add' }} Service</p>
+    <h1>{{ service.name if service else 'New Service' }}</h1>
+  </div>
+</div>
+
+<form method="post" class="admin-form">
+  <label>Name
+    <input type="text" name="name" value="{{ service.name if service else '' }}" required>
+  </label>
+  <label>Description
+    <textarea name="description" rows="3">{{ service.description if service else '' }}</textarea>
+  </label>
+  <div class="admin-grid-2">
+    <label>Price (₹)
+      <input type="number" name="price" value="{{ service.price if service else '' }}" min="0" required>
+    </label>
+    <label>Duration
+      <input type="text" name="duration" value="{{ service.duration if service else '' }}" placeholder="e.g. 20 min" required>
+    </label>
+  </div>
+  <label>Image filename
+    <input type="text" name="image" value="{{ service.image if service else '' }}" placeholder="service-general.jpg">
+  </label>
+  <div style="display:flex; gap:1rem;">
+    <button type="submit" class="btn btn-dark btn-pill">{{ 'Save Changes' if service else 'Add Service' }}</button>
+    <a href="{{ url_for('admin.services_list') }}" class="btn btn-outline btn-pill">Cancel</a>
+  </div>
+</form>
+{% endblock %}

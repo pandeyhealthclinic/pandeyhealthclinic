@@ -1,0 +1,52 @@
+{% extends "admin/layout.html" %}
+{% block title %}Gallery — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Manage</p>
+    <h1>Gallery</h1>
+  </div>
+</div>
+
+<form action="{{ url_for('admin.gallery_upload') }}" method="post" enctype="multipart/form-data" class="admin-form" style="margin-bottom:2.5rem;">
+  <div class="admin-grid-2">
+    <label>Category
+      <select name="category">
+        {% for c in categories %}
+        <option value="{{ c }}">{{ c }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Caption
+      <input type="text" name="caption" placeholder="e.g. Reception area">
+    </label>
+  </div>
+  <label>Photo
+    <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required>
+  </label>
+  <button type="submit" class="btn btn-dark btn-pill">Upload Photo</button>
+</form>
+
+<div class="medicine-grid">
+  {% for item in items %}
+  <article class="medicine-card">
+    <div class="medicine-image">
+      <img src="{{ image_url(item.image) }}" alt="{{ item.caption }}" onerror="this.src='https://placehold.co/320x220/DCE6DE/0E3B32?text=Photo'">
+    </div>
+    <div class="medicine-body">
+      <h3>{{ item.caption or item.category }}</h3>
+      <p class="medicine-category">{{ item.category }}</p>
+      {% if item.id %}
+      <form action="{{ url_for('admin.gallery_delete', item_id=item.id) }}" method="post" onsubmit="return confirm('Delete this photo?');">
+        <button type="submit" class="btn btn-outline btn-pill btn-block">Delete</button>
+      </form>
+      {% else %}
+      <p style="font-size:0.78rem; color:var(--ink-soft);">Seed data — connect Firebase to manage</p>
+      {% endif %}
+    </div>
+  </article>
+  {% else %}
+  <p class="dashboard-empty">No photos yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

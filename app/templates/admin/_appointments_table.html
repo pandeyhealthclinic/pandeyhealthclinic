@@ -1,0 +1,28 @@
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Patient</th><th>Service</th><th>Date/Time</th><th>Type</th><th>Status</th><th>Report</th><th>Update</th></tr></thead>
+    <tbody>
+      {% for a in appointments %}
+      <tr>
+        <td>{{ a.patient_name|default('—') }}<br><span style="font-weight:400;color:var(--ink-soft);">{{ a.patient_phone|default('') }}</span></td>
+        <td>{{ a.service_name|default('—') }}</td>
+        <td>{{ a.date }} {{ a.time }}</td>
+        <td>{{ a.consultation_type|default('offline')|capitalize }}{% if a.meeting_link %}<br><a href="{{ a.meeting_link }}" target="_blank" class="link-btn">Join Call</a>{% endif %}{% if a.consultation_type == 'online' %}<br><a href="{{ url_for('admin.consultation_thread', appointment_id=a.id) }}" class="link-btn">Open Chat</a>{% endif %}</td>
+        <td><span class="status-pill status-{{ a.status|default('pending') }}">{{ a.status|default('pending') }}</span></td>
+        <td>{% if a.report_url %}<a href="{{ a.report_url }}" target="_blank" class="link-btn">View</a>{% else %}—{% endif %}</td>
+        <td class="table-actions">
+          <form action="{{ url_for('admin.appointment_status', appointment_id=a.id) }}" method="post">
+            <select name="status" onchange="this.form.submit()">
+              {% for s in ['pending','confirmed','completed','cancelled'] %}
+              <option value="{{ s }}" {% if a.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No appointments found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

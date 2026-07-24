@@ -1,0 +1,53 @@
+{% extends "admin/layout.html" %}
+{% block title %}Website Content — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Edit</p>
+    <h1>Website Content</h1>
+  </div>
+</div>
+<p style="max-width:640px; margin-bottom:2rem;">Changes here update the live homepage immediately. List-based fields (trust badges, specializations, languages, vision points) aren't editable from this simple form yet — edit those directly in Firestore's <code>site_content</code> collection if needed.</p>
+
+<div class="admin-grid-2">
+  <form method="post" action="{{ url_for('admin.content_save', section='hero') }}" class="admin-form">
+    <h3>Hero Section</h3>
+    <label>Clinic Name<input type="text" name="clinic_name" value="{{ sections.hero.clinic_name }}"></label>
+    <label>Doctor Name<input type="text" name="doctor_name" value="{{ sections.hero.doctor_name }}"></label>
+    <label>Qualification<input type="text" name="qualification" value="{{ sections.hero.qualification }}"></label>
+    <label>Tagline<input type="text" name="tagline" value="{{ sections.hero.tagline }}"></label>
+    <label>City<input type="text" name="city" value="{{ sections.hero.city }}"></label>
+    <label>Phone<input type="text" name="phone" value="{{ sections.hero.phone }}"></label>
+    <label>Working Hours<input type="text" name="working_hours" value="{{ sections.hero.working_hours }}"></label>
+    <button type="submit" class="btn btn-dark btn-pill">Save Hero</button>
+  </form>
+
+  <form method="post" action="{{ url_for('admin.content_save', section='about') }}" class="admin-form">
+    <h3>About Section</h3>
+    <label>Heading<input type="text" name="heading" value="{{ sections.about.heading }}"></label>
+    <label>Body<textarea name="body" rows="4">{{ sections.about.body }}</textarea></label>
+    <label>Years of Experience<input type="number" name="years_experience" value="{{ sections.about.years_experience }}"></label>
+    <button type="submit" class="btn btn-dark btn-pill">Save About</button>
+  </form>
+
+  <form method="post" action="{{ url_for('admin.content_save', section='doctor') }}" class="admin-form">
+    <h3>Doctor Profile</h3>
+    <label>Name<input type="text" name="name" value="{{ sections.doctor.name }}"></label>
+    <label>Qualification<input type="text" name="qualification" value="{{ sections.doctor.qualification }}"></label>
+    <label>Bio<textarea name="bio" rows="4">{{ sections.doctor.bio }}</textarea></label>
+    <label>Experience (years)<input type="number" name="experience_years" value="{{ sections.doctor.experience_years }}"></label>
+    <label>Working Hours<input type="text" name="working_hours" value="{{ sections.doctor.working_hours }}"></label>
+    <button type="submit" class="btn btn-dark btn-pill">Save Doctor</button>
+  </form>
+
+  <form method="post" action="{{ url_for('admin.content_save', section='contact') }}" class="admin-form">
+    <h3>Contact Info</h3>
+    <label>Address<input type="text" name="address" value="{{ sections.contact.address }}"></label>
+    <label>Phone<input type="text" name="phone" value="{{ sections.contact.phone }}"></label>
+    <label>Email<input type="text" name="email" value="{{ sections.contact.email }}"></label>
+    <label>Working Hours<input type="text" name="working_hours" value="{{ sections.contact.working_hours }}"></label>
+    <label>Emergency Contact<input type="text" name="emergency_contact" value="{{ sections.contact.emergency_contact }}"></label>
+    <button type="submit" class="btn btn-dark btn-pill">Save Contact</button>
+  </form>
+</div>
+{% endblock %}

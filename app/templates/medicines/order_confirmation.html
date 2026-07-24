@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Order Confirmation — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="booking-section" style="text-align:center;">
+  {% include "partials/patient_subnav.html" %}
+  {% if order %}
+  <p class="eyebrow eyebrow-dark">Order Placed</p>
+  <h1>Thanks — your order is being processed</h1>
+
+  <div class="order-steps" style="justify-content:center;">
+    <div class="order-step is-done"><span>✓</span>Cart</div>
+    <div class="order-step-line is-done"></div>
+    <div class="order-step is-done"><span>✓</span>Checkout</div>
+    <div class="order-step-line is-done"></div>
+    <div class="order-step is-active"><span>3</span>Confirmation</div>
+  </div>
+
+  <div style="max-width:520px; margin:0 auto 2rem; text-align:left;">
+    {% set status = order.status|default('pending') %}
+    {% include "patient/_order_tracker.html" with context %}
+  </div>
+
+  <div class="dashboard-card" style="max-width:440px; margin:2rem auto; text-align:left;">
+    <ul class="dashboard-list">
+      {% for item in order['items'] %}
+      <li><strong>{{ item.name }}</strong><span>×{{ item.qty }} — ₹{{ item.price * item.qty }}</span></li>
+      {% endfor %}
+    </ul>
+    <div class="cart-summary">
+      <span>Total</span>
+      <strong>₹{{ order.total }}</strong>
+    </div>
+  </div>
+  {% else %}
+  <p class="eyebrow eyebrow-dark">Not Found</p>
+  <h1>We couldn't find that order</h1>
+  {% endif %}
+  <a href="{{ url_for('patient.dashboard') }}" class="btn btn-dark btn-pill">Go to Dashboard</a>
+</section>
+{% endblock %}

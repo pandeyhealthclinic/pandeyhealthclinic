@@ -1,0 +1,26 @@
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Patient</th><th>Service</th><th>Date/Time</th><th>Status</th><th>Last Message</th><th>Unread</th><th>Open</th></tr></thead>
+    <tbody>
+      {% for t in threads %}
+      <tr>
+        <td>{{ t.patient_name|default('—') }}<br><span style="font-weight:400;color:var(--ink-soft);">{{ t.patient_phone|default('') }}</span></td>
+        <td>{{ t.service_name|default('—') }}</td>
+        <td>{{ t.date }} {{ t.time }}</td>
+        <td><span class="status-pill status-{{ t.status|default('pending') }}">{{ t.status|default('pending') }}</span></td>
+        <td style="white-space:normal; max-width:280px;">
+          {% if t.last_message %}
+          <strong>{{ t.last_message.sender_name }}:</strong> {{ t.last_message.text[:60] }}{% if t.last_message.text|length > 60 %}…{% endif %}
+          {% else %}
+          <span style="color:var(--ink-soft);">No messages yet</span>
+          {% endif %}
+        </td>
+        <td>{% if t.unread_count %}<span class="sidebar-badge">{{ t.unread_count }}</span>{% else %}—{% endif %}</td>
+        <td><a href="{{ url_for('admin.consultation_thread', appointment_id=t.id) }}" class="link-btn">Open Chat</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No online consultations yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

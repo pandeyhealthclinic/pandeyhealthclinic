@@ -1,0 +1,14 @@
+{% extends "admin/layout.html" %}
+{% block title %}Consultations — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Online Consultations</p>
+    <h1>Consultation Inbox</h1>
+  </div>
+</div>
+
+<div id="consultationsTable" data-refresh-url="{{ url_for('admin.consultations_table_fragment') }}" data-refresh-interval="6000">
+  {% include "admin/_consultations_table.html" %}
+</div>
+{% endblock %}

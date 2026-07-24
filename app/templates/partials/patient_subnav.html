@@ -1,0 +1,7 @@
+<nav class="patient-subnav" aria-label="Quick navigation">
+  <a href="{{ url_for('main.home') }}">← Home</a>
+  <a href="{{ url_for('patient.dashboard') }}" class="{{ 'is-current' if request.endpoint == 'patient.dashboard' }}">Dashboard</a>
+  <a href="{{ url_for('medicines.store') }}" class="{{ 'is-current' if request.endpoint and request.endpoint.startswith('medicines.') }}">Medicine Store</a>
+  <a href="{{ url_for('appointments.book_form') }}" class="{{ 'is-current' if request.endpoint and request.endpoint.startswith('appointments.') }}">Book Appointment</a>
+  <a href="{{ url_for('patient.profile') }}" class="{{ 'is-current' if request.endpoint and request.endpoint.startswith('patient.profile') }}">My Profile</a>
+</nav>

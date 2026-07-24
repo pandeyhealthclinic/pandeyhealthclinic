@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ service.name if service else "Service" }} — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section>
+  {% if service %}
+  <p class="eyebrow eyebrow-dark">Service</p>
+  <h1>{{ service.name }}</h1>
+  <p style="max-width:560px;">{{ service.description }}</p>
+  <div class="service-meta" style="max-width:280px; margin-bottom:2rem;">
+    <span class="service-price">₹{{ service.price }}</span>
+    <span class="service-duration">{{ service.duration }}</span>
+  </div>
+  <a href="{{ url_for('appointments.book_form', service=service.id) }}" class="btn btn-dark btn-pill">Book This Service</a>
+  {% else %}
+  <p class="eyebrow eyebrow-dark">Not Found</p>
+  <h1>We couldn't find that service</h1>
+  <p>It may have been renamed or removed. Browse all services below.</p>
+  {% endif %}
+
+  <div class="services-grid" style="margin-top:3rem;">
+    {% for s in services %}
+    <article class="service-card">
+      <div class="service-body">
+        <h3>{{ s.name }}</h3>
+        <p>{{ s.description }}</p>
+        <div class="service-meta">
+          <span class="service-price">₹{{ s.price }}</span>
+          <span class="service-duration">{{ s.duration }}</span>
+        </div>
+        <a href="{{ url_for('main.service_detail', service_id=s.id) }}" class="btn btn-outline btn-pill btn-block">View Details</a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

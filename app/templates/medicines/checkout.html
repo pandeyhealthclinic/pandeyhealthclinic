@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Checkout — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="store-section">
+  {% include "partials/patient_subnav.html" %}
+  <p class="eyebrow eyebrow-dark">Checkout</p>
+  <h1>Confirm your order</h1>
+
+  <div class="order-steps">
+    <div class="order-step is-done"><span>✓</span>Cart</div>
+    <div class="order-step-line is-done"></div>
+    <div class="order-step is-active"><span>2</span>Checkout</div>
+    <div class="order-step-line"></div>
+    <div class="order-step"><span>3</span>Confirmation</div>
+  </div>
+
+  {% if needs_prescription %}
+  <div class="auth-notice">One or more items in your cart require a valid prescription. Please have it ready — the clinic will verify it before dispatch.</div>
+  {% endif %}
+
+  <div class="checkout-grid">
+    <form method="post" class="booking-form">
+      <label>Delivery Address
+        <textarea name="address" rows="3" required placeholder="House no., street, landmark, city, PIN"></textarea>
+      </label>
+      <label>Payment Method
+        <select name="payment_method">
+          <option value="cod">Cash on Delivery</option>
+          <option value="upi">UPI (pay at pickup/delivery)</option>
+        </select>
+      </label>
+      <button type="submit" class="btn btn-dark btn-pill btn-block">Place Order</button>
+    </form>
+
+    <div class="checkout-summary">
+      <h3>Order Summary</h3>
+      <ul class="dashboard-list">
+        {% for item in items %}
+        <li><strong>{{ item.medicine.name }}</strong><span>×{{ item.qty }} — ₹{{ item.line_total }}</span></li>
+        {% endfor %}
+      </ul>
+      <div class="cart-summary">
+        <span>Total</span>
+        <strong>₹{{ total }}</strong>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

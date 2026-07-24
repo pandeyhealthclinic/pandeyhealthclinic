@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Notifications — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="dashboard">
+  {% include "partials/patient_subnav.html" %}
+  <p class="eyebrow eyebrow-dark">Notifications</p>
+  <h1>Recent Updates</h1>
+
+  {% if notifications %}
+  <div class="dashboard-card" style="max-width:560px;">
+    <ul class="dashboard-list">
+      {% for n in notifications %}
+      <li>
+        <span>{{ n.message }}</span>
+        <span>{{ n.created_at[:16].replace('T', ' ') if n.created_at else '' }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <p class="dashboard-empty">No notifications yet.</p>
+  {% endif %}
+  <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline btn-pill" style="margin-top:1.5rem;">Back to Dashboard</a>
+</section>
+{% endblock %}

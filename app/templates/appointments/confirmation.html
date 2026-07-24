@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Appointment Confirmation — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="booking-section" style="text-align:center;">
+  {% include "partials/patient_subnav.html" %}
+  {% if appointment %}
+  <p class="eyebrow eyebrow-dark">Request Received</p>
+  <h1>Thanks — your appointment is pending confirmation</h1>
+  <div class="dashboard-card" style="max-width:440px; margin:2rem auto; text-align:left;">
+    <ul class="contact-list">
+      <li><strong>Service</strong><span>{{ appointment.service_name }}</span></li>
+      <li><strong>Date</strong><span>{{ appointment.date }}</span></li>
+      <li><strong>Time</strong><span>{{ appointment.time }}</span></li>
+      <li><strong>Type</strong><span>{{ appointment.consultation_type|capitalize }}</span></li>
+      <li><strong>Status</strong><span>{{ appointment.status|capitalize }}</span></li>
+    </ul>
+  </div>
+  {% else %}
+  <p class="eyebrow eyebrow-dark">Not Found</p>
+  <h1>We couldn't find that appointment</h1>
+  {% endif %}
+  <a href="{{ url_for('patient.dashboard') }}" class="btn btn-dark btn-pill">Go to Dashboard</a>
+</section>
+{% endblock %}

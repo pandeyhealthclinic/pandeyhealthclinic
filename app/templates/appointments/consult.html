@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Consultation — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="booking-section">
+  {% include "partials/patient_subnav.html" %}
+  <p class="eyebrow eyebrow-dark">Online Consultation</p>
+  <h1>{{ appointment.service_name }}</h1>
+  <p>{{ appointment.date }} at {{ appointment.time }} · Status: {{ appointment.status|capitalize }}</p>
+
+  {% if appointment.status != 'confirmed' %}
+  <div class="auth-notice">This consultation link and chat unlock once the clinic confirms your appointment.</div>
+  {% elif appointment.meeting_link %}
+  <a href="{{ appointment.meeting_link }}" target="_blank" class="btn btn-dark btn-pill" style="margin-bottom:2rem;">Join Video/Audio Call</a>
+  {% endif %}
+
+  <h3>Chat with the Clinic</h3>
+  <div class="chat-thread" id="chatThread" data-refresh-url="{{ url_for('appointments.consult_messages_fragment', appointment_id=appointment.id) }}" data-refresh-interval="4000" data-refresh-chat="true" data-count="{{ messages|length }}">
+    {% include "appointments/_chat_messages.html" %}
+  </div>
+
+  <form action="{{ url_for('appointments.consult_message', appointment_id=appointment.id) }}" method="post" class="chat-form">
+    <input type="text" name="text" placeholder="Type a message..." required>
+    <button type="submit" class="btn btn-dark btn-pill">Send</button>
+  </form>
+
+  <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline btn-pill" style="margin-top:1.5rem;">Back to Dashboard</a>
+</section>
+{% endblock %}

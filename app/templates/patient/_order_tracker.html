@@ -1,0 +1,18 @@
+{# Expects `status` in context: pending / confirmed / packed / dispatched / delivered / cancelled / refunded #}
+{% set stages = ['pending', 'confirmed', 'packed', 'dispatched', 'delivered'] %}
+{% if status in ('cancelled', 'refunded') %}
+<div class="order-tracker order-tracker--stopped">
+  <span class="status-pill status-{{ status }}">{{ status|capitalize }}</span>
+</div>
+{% else %}
+<div class="order-tracker">
+  {% set current_index = stages.index(status) if status in stages else 0 %}
+  {% for stage in stages %}
+  <div class="tracker-step {{ 'is-done' if loop.index0 < current_index else '' }} {{ 'is-current' if loop.index0 == current_index else '' }}">
+    <span class="tracker-dot">{{ '✓' if loop.index0 < current_index else loop.index }}</span>
+    <span class="tracker-label">{{ stage|capitalize }}</span>
+  </div>
+  {% if not loop.last %}<div class="tracker-line {{ 'is-done' if loop.index0 < current_index else '' }}"></div>{% endif %}
+  {% endfor %}
+</div>
+{% endif %}

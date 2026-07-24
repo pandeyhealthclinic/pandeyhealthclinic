@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Medicine Store — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="store-section">
+  <div class="store-header">
+    <div>
+      <p class="eyebrow eyebrow-dark">Pandey Pharmacy</p>
+      <h1>Order medicines online</h1>
+      <p>{{ total_results }} product{{ 's' if total_results != 1 else '' }} available.</p>
+    </div>
+    <a href="{{ url_for('medicines.view_cart') }}" class="btn btn-dark btn-pill">
+      🛒 Cart {% if cart_count %}({{ cart_count }}){% endif %}
+    </a>
+  </div>
+
+  <form method="get" class="store-filters">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search medicines...">
+    <select name="category" onchange="this.form.submit()">
+      <option value="">All Categories</option>
+      {% for c in categories %}
+      <option value="{{ c }}" {% if c == selected_category %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+    <select name="sort" onchange="this.form.submit()">
+      <option value="">Sort: Featured</option>
+      <option value="price_low" {% if sort=='price_low' %}selected{% endif %}>Price: Low to High</option>
+      <option value="price_high" {% if sort=='price_high' %}selected{% endif %}>Price: High to Low</option>
+      <option value="rating" {% if sort=='rating' %}selected{% endif %}>Top Rated</option>
+      <option value="name" {% if sort=='name' %}selected{% endif %}>Name A–Z</option>
+    </select>
+    <button type="submit" class="btn btn-outline btn-pill">Search</button>
+  </form>
+
+  <div class="medicine-grid">
+    {% for m in medicines %}
+    <article class="medicine-card">
+      <div class="medicine-image">
+        <img src="{{ url_for('static', filename='images/' + m.image) }}" alt="{{ m.name }}" onerror="this.src='https://placehold.co/320x220/DCE6DE/0E3B32?text={{ m.name|urlencode }}'">
+        {% if m.prescription_required %}<span class="badge badge-rx">Rx Required</span>{% endif %}
+        {% if m.stock <= 0 %}<span class="badge badge-out">Out of Stock</span>{% endif %}
+        <form action="{{ url_for('medicines.toggle_wishlist') }}" method="post" class="wishlist-toggle">
+          <input type="hidden" name="medicine_id" value="{{ m.id }}">
+          <button type="submit" aria-label="Toggle wishlist">{{ '♥' if m.id in wishlist_ids else '♡' }}</button>
+        </form>
+      </div>
+      <div class="medicine-body">
+        <a href="{{ url_for('medicines.detail', medicine_id=m.id) }}"><h3>{{ m.name }}</h3></a>
+        <p class="medicine-category">{{ m.category }}</p>
+        <div class="medicine-price-row">
+          <span class="medicine-offer">₹{{ m.offer_price }}</span>
+          <span class="medicine-mrp">₹{{ m.mrp }}</span>
+        </div>
+        <div class="medicine-rating">★ {{ m.rating }} ({{ m.review_count }})</div>
+        <form action="{{ url_for('medicines.add_to_cart') }}" method="post">
+          <input type="hidden" name="medicine_id" value="{{ m.id }}">
+          <input type="hidden" name="qty" value="1">
+          <button type="submit" class="btn btn-dark btn-pill btn-block" {% if m.stock <= 0 %}disabled{% endif %}>
+            {{ 'Out of Stock' if m.stock <= 0 else 'Add to Cart' }}
+          </button>
+        </form>
+      </div>
+    </article>
+    {% else %}
+    <p class="dashboard-empty">No medicines matched your search.</p>
+    {% endfor %}
+  </div>
+
+  {% if total_pages > 1 %}
+  <div class="pagination">
+    {% for p in range(1, total_pages + 1) %}
+    <a href="{{ url_for('medicines.store', q=query, category=selected_category, sort=sort, page=p) }}" class="{{ 'is-active' if p == page else '' }}">{{ p }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

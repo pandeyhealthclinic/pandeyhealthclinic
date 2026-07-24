@@ -1,0 +1,50 @@
+{% extends "admin/layout.html" %}
+{% block title %}{{ 'Edit' if medicine else 'Add' }} Medicine — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">{{ 'Edit' if medicine else 'Add' }} Medicine</p>
+    <h1>{{ medicine.name if medicine else 'New Medicine' }}</h1>
+  </div>
+</div>
+
+<form method="post" class="admin-form">
+  <label>Name
+    <input type="text" name="name" value="{{ medicine.name if medicine else '' }}" required>
+  </label>
+  <label>Category
+    <select name="category" required>
+      {% for c in categories %}
+      <option value="{{ c }}" {% if medicine and medicine.category == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Description
+    <textarea name="description" rows="3">{{ medicine.description if medicine else '' }}</textarea>
+  </label>
+  <div class="admin-grid-2">
+    <label>MRP (₹)
+      <input type="number" name="mrp" value="{{ medicine.mrp if medicine else '' }}" min="0" required>
+    </label>
+    <label>Offer Price (₹)
+      <input type="number" name="offer_price" value="{{ medicine.offer_price if medicine else '' }}" min="0" required>
+    </label>
+  </div>
+  <div class="admin-grid-2">
+    <label>Stock Quantity
+      <input type="number" name="stock" value="{{ medicine.stock if medicine else 0 }}" min="0" required>
+    </label>
+    <label>Image filename
+      <input type="text" name="image" value="{{ medicine.image if medicine else '' }}" placeholder="med-example.jpg">
+    </label>
+  </div>
+  <label class="checkbox-row">
+    <input type="checkbox" name="prescription_required" {% if medicine and medicine.prescription_required %}checked{% endif %}>
+    Prescription required
+  </label>
+  <div style="display:flex; gap:1rem;">
+    <button type="submit" class="btn btn-dark btn-pill">{{ 'Save Changes' if medicine else 'Add Medicine' }}</button>
+    <a href="{{ url_for('admin.medicines_list') }}" class="btn btn-outline btn-pill">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "admin/layout.html" %}
+{% block title %}Patients — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Manage</p>
+    <h1>Patients</h1>
+  </div>
+</div>
+
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th></tr></thead>
+    <tbody>
+      {% for p in patients %}
+      <tr>
+        <td>{{ p.name|default('—') }}</td>
+        <td>{{ p.email|default('—') }}</td>
+        <td>{{ p.phone|default('—') }}</td>
+        <td>{{ p.created_at[:10] if p.created_at else '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">No registered patients yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

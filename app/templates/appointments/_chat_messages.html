@@ -1,0 +1,8 @@
+{% for m in messages %}
+<div class="chat-bubble {{ 'chat-bubble--mine' if m.sender_uid == current_user.uid else '' }}">
+  <span class="chat-sender">{{ m.sender_name }}</span>
+  <p>{{ m.text }}</p>
+</div>
+{% else %}
+<p class="dashboard-empty">No messages yet — say hello!</p>
+{% endfor %}

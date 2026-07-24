@@ -1,0 +1,21 @@
+{% extends "admin/layout.html" %}
+{% block title %}Appointments — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Manage</p>
+    <h1>Appointments</h1>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <a href="{{ url_for('admin.appointments_list') }}" class="{{ 'is-active' if not status_filter }}">All</a>
+  {% for s in ['pending','confirmed','completed','cancelled'] %}
+  <a href="{{ url_for('admin.appointments_list', status=s) }}" class="{{ 'is-active' if status_filter == s }}">{{ s|capitalize }}</a>
+  {% endfor %}
+</div>
+
+<div id="appointmentsTable" data-refresh-url="{{ url_for('admin.appointments_table_fragment', status=status_filter) }}" data-refresh-interval="6000">
+  {% include "admin/_appointments_table.html" %}
+</div>
+{% endblock %}

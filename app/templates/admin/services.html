@@ -1,0 +1,34 @@
+{% extends "admin/layout.html" %}
+{% block title %}Services — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Manage</p>
+    <h1>Services</h1>
+  </div>
+  <a href="{{ url_for('admin.service_new') }}" class="btn btn-dark btn-pill">+ Add Service</a>
+</div>
+
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Price</th><th>Duration</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for s in services %}
+      <tr>
+        <td>{{ s.name }}</td>
+        <td>₹{{ s.price }}</td>
+        <td>{{ s.duration }}</td>
+        <td class="table-actions">
+          <a href="{{ url_for('admin.service_edit', service_id=s.id) }}" class="link-btn">Edit</a>
+          <form action="{{ url_for('admin.service_delete', service_id=s.id) }}" method="post" onsubmit="return confirm('Delete this service?');">
+            <button type="submit" class="link-btn link-btn--danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">No services yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

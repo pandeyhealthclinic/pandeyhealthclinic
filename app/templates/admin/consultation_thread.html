@@ -1,0 +1,27 @@
+{% extends "admin/layout.html" %}
+{% block title %}Consultation — {{ appointment.patient_name|default('Patient') }}{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Consultation with {{ appointment.patient_name|default('Patient') }}</p>
+    <h1>{{ appointment.service_name|default('Consultation') }}</h1>
+    <p>{{ appointment.date }} {{ appointment.time }} · Status: {{ appointment.status|default('pending')|capitalize }}
+      {% if appointment.patient_phone %} · {{ appointment.patient_phone }}{% endif %}
+    </p>
+  </div>
+  <a href="{{ url_for('admin.consultations_list') }}" class="btn btn-outline btn-pill">← All Consultations</a>
+</div>
+
+{% if appointment.meeting_link %}
+<a href="{{ appointment.meeting_link }}" target="_blank" class="btn btn-dark btn-pill" style="margin-bottom:1.5rem;">Join Video/Audio Call</a>
+{% endif %}
+
+<div class="chat-thread" id="chatThread" data-refresh-url="{{ url_for('admin.consultation_messages_fragment', appointment_id=appointment.id) }}" data-refresh-interval="4000" data-refresh-chat="true" data-count="{{ messages|length }}">
+  {% include "admin/_consultation_messages.html" %}
+</div>
+
+<form action="{{ url_for('admin.consultation_reply', appointment_id=appointment.id) }}" method="post" class="chat-form">
+  <input type="text" name="text" placeholder="Reply to this patient..." required autofocus>
+  <button type="submit" class="btn btn-dark btn-pill">Send Reply</button>
+</form>
+{% endblock %}

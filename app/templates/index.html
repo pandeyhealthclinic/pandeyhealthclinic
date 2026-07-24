@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MedicalClinic",
+  "name": "{{ hero.clinic_name }}",
+  "description": "{{ hero.tagline }} — general medicine clinic in {{ hero.city }}.",
+  "telephone": "+91{{ hero.phone }}",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Gaya",
+    "addressRegion": "Bihar",
+    "addressCountry": "IN"
+  },
+  "medicalSpecialty": "General Practice",
+  "physician": {
+    "@type": "Physician",
+    "name": "{{ hero.doctor_name }}"
+  }
+}
+</script>
+{% endblock %}
+{% block content %}
+
+<section class="hero" id="home">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow eyebrow-dark">{{ hero.city }}</p>
+      <h1>{{ hero.clinic_name }} — <span class="text-underline">Lord's Cares Better</span></h1>
+      <p class="hero-sub">{{ hero.doctor_name }}, {{ hero.qualification }}. Book appointments, consult online, and order medicines — all from one trusted clinic.</p>
+      <div class="hero-actions">
+        <a href="{{ url_for('appointments.book_form') }}" class="btn btn-dark btn-pill">Book Appointment</a>
+        <a href="{{ url_for('appointments.book_form', consultation_type='online') }}" class="btn btn-outline btn-pill">Consult Online</a>
+        <a href="{{ url_for('medicines.store') }}" class="btn btn-outline btn-pill">Order Medicines</a>
+      </div>
+      <a href="tel:{{ hero.phone }}" class="hero-call">
+        <span class="hero-call-icon">📞</span>
+        <span>Call now · {{ hero.phone }}</span>
+      </a>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-photo-card">
+        <img src="{{ url_for('static', filename='images/doctor-hero.jpg') }}" alt="{{ hero.doctor_name }} at {{ hero.clinic_name }}" onerror="this.src='https://placehold.co/520x640/0E3B32/F3F6F1?text=Dr.+Pandey'">
+      </div>
+      <div class="hero-mini-card">
+        <img src="{{ url_for('static', filename='images/doctor-thumb.jpg') }}" alt="{{ hero.doctor_name }}" onerror="this.src='https://placehold.co/120x120/DCE6DE/0E3B32?text=DVP'">
+        <div>
+          <p class="mini-name">{{ hero.doctor_name }}</p>
+          <p class="mini-role">General Physician trained to diagnose, treat, and prevent illness.</p>
+        </div>
+      </div>
+      <div class="hero-hours-badge">
+        <p class="hours-eyebrow">{{ hero.working_hours }}</p>
+        <p class="hours-title">We're Open Today</p>
+        <span class="hours-clock" aria-hidden="true">🕒</span>
+      </div>
+    </div>
+  </div>
+
+  <ul class="trust-strip">
+    {% for badge in hero.trust_badges %}
+    <li><span class="trust-dot">✳</span>{{ badge }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="quick-cards">
+  <a href="{{ url_for('appointments.book_form') }}" class="quick-card quick-card--lime">
+    <span class="quick-card-arrow">↗</span>
+    <h3>Book a Visit</h3>
+    <p>Pick a date, time, and service — confirmed in minutes.</p>
+  </a>
+  <a href="{{ url_for('appointments.book_form', consultation_type='online') }}" class="quick-card quick-card--white">
+    <span class="quick-card-arrow">↗</span>
+    <h3>Online Consultation</h3>
+    <p>Video, audio, or chat consultation with Dr. Pandey.</p>
+  </a>
+  <a href="{{ url_for('medicines.store') }}" class="quick-card quick-card--lavender">
+    <span class="quick-card-arrow">↗</span>
+    <h3>Order Medicines</h3>
+    <p>Verified pharmacy stock delivered or ready for pickup.</p>
+  </a>
+</section>
+
+<section class="about" id="about">
+  <div class="about-grid">
+    <div class="about-copy">
+      <p class="eyebrow">{{ about.eyebrow }}</p>
+      <h2>{{ about.heading }}</h2>
+      <p class="about-body">{{ about.body }}</p>
+      <div class="about-actions">
+        <a href="{{ url_for('appointments.book_form') }}" class="btn btn-dark btn-pill">Get Started</a>
+        <a href="tel:{{ hero.phone }}" class="about-phone">📞 {{ hero.phone }}</a>
+      </div>
+    </div>
+    <div class="about-visual">
+      <img src="{{ url_for('static', filename='images/clinic-interior.jpg') }}" alt="Inside {{ hero.clinic_name }}" onerror="this.src='https://placehold.co/560x420/1A2E27/DCE6DE?text=Clinic+Interior'">
+      <div class="about-stat-badge">
+        <span class="stat-number">{{ about.years_experience }}+</span>
+        <span class="stat-label">Years of Practice</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="vision" id="vision">
+  <div class="vision-heading">
+    <p class="eyebrow eyebrow-dark">{{ vision.eyebrow }}</p>
+    <h2>{{ vision.heading }}</h2>
+  </div>
+  <div class="vision-grid">
+    {% for point in vision.points %}
+    <div class="vision-card">
+      <span class="vision-index">0{{ loop.index }}</span>
+      <h3>{{ point.title }}</h3>
+      <p>{{ point.description }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="why-us">
+  <p class="eyebrow">Why Choose Us</p>
+  <h2>Everything a patient needs, none of the runaround</h2>
+  <div class="why-us-grid">
+    {% for item in why_choose_us %}
+    <div class="why-card">
+      <h4>{{ item.title }}</h4>
+      <p>{{ item.description }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="services" id="services">
+  <div class="section-heading">
+    <p class="eyebrow eyebrow-dark">Our Services</p>
+    <h2>Care for every stage, every day</h2>
+  </div>
+  <div class="services-grid">
+    {% for service in services %}
+    <article class="service-card">
+      <div class="service-image">
+        <img src="{{ url_for('static', filename='images/' + service.image) }}" alt="{{ service.name }}" onerror="this.src='https://placehold.co/400x260/DCE6DE/0E3B32?text={{ service.name|urlencode }}'">
+      </div>
+      <div class="service-body">
+        <h3>{{ service.name }}</h3>
+        <p>{{ service.description }}</p>
+        <div class="service-meta">
+          <span class="service-price">₹{{ service.price }}</span>
+          <span class="service-duration">{{ service.duration }}</span>
+        </div>
+        <a href="{{ url_for('appointments.book_form', service=service.id) }}" class="btn btn-dark btn-pill btn-block">Book Now</a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="doctor" id="doctor">
+  <div class="doctor-grid">
+    <div class="doctor-photo">
+      <img src="{{ url_for('static', filename='images/doctor-full.jpg') }}" alt="{{ doctor.name }}" onerror="this.src='https://placehold.co/480x560/0E3B32/F3F6F1?text=Dr.+Pandey'">
+    </div>
+    <div class="doctor-info">
+      <p class="eyebrow">Meet Your Doctor</p>
+      <h2>{{ doctor.name }}</h2>
+      <p class="doctor-qual">{{ doctor.qualification }}</p>
+      <p class="doctor-bio">{{ doctor.bio }}</p>
+      <div class="doctor-facts">
+        <div>
+          <span class="fact-label">Experience</span>
+          <span class="fact-value">{{ doctor.experience_years }}+ years</span>
+        </div>
+        <div>
+          <span class="fact-label">Languages</span>
+          <span class="fact-value">{{ doctor.languages | join(', ') }}</span>
+        </div>
+        <div>
+          <span class="fact-label">Hours</span>
+          <span class="fact-value">{{ doctor.working_hours }}</span>
+        </div>
+      </div>
+      <ul class="doctor-specializations">
+        {% for spec in doctor.specializations %}
+        <li>{{ spec }}</li>
+        {% endfor %}
+      </ul>
+      <a href="{{ url_for('appointments.book_form') }}" class="btn btn-dark btn-pill">Book a Consultation</a>
+    </div>
+  </div>
+</section>
+
+<section class="medicine-teaser" id="medicines">
+  <div class="medicine-teaser-inner">
+    <div>
+      <p class="eyebrow eyebrow-light">Pandey Pharmacy</p>
+      <h2>Order medicines without leaving home</h2>
+      <p>Tablets, syrups, supplements, and equipment — verified stock, prescription checks, and doorstep delivery.</p>
+    </div>
+    <div class="medicine-categories">
+      {% for cat in ["Tablets", "Syrups", "Supplements", "Baby Care", "Devices", "Personal Care"] %}
+      <span class="medicine-chip">{{ cat }}</span>
+      {% endfor %}
+    </div>
+    <a href="{{ url_for('medicines.store') }}" class="btn btn-lime btn-pill">Visit the Pharmacy</a>
+  </div>
+</section>
+
+<section class="testimonials" id="testimonials">
+  <p class="eyebrow">Patient Stories</p>
+  <h2>What patients say about {{ CLINIC_NAME }}</h2>
+  <div class="testimonials-grid">
+    {% for t in testimonials %}
+    <div class="testimonial-card">
+      <div class="stars">{{ '★' * t.rating }}{{ '☆' * (5 - t.rating) }}</div>
+      <p>&ldquo;{{ t.text }}&rdquo;</p>
+      <p class="testimonial-name">— {{ t.name }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="gallery" id="gallery">
+  <p class="eyebrow eyebrow-dark">Gallery</p>
+  <h2>Inside the clinic</h2>
+  <div class="gallery-grid">
+    {% for item in gallery %}
+    <figure class="gallery-item">
+      <img src="{{ image_url(item.image) }}" alt="{{ item.caption }}" onerror="this.src='https://placehold.co/400x300/DCE6DE/0E3B32?text={{ item.category|urlencode }}'">
+      <figcaption>{{ item.caption }}</figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="contact-grid">
+    <div class="contact-info">
+      <p class="eyebrow">Get in Touch</p>
+      <h2>Visit or call {{ CLINIC_NAME }}</h2>
+      <ul class="contact-list">
+        <li><strong>Address</strong><span>{{ contact.address }}</span></li>
+        <li><strong>Phone</strong><span>{{ contact.phone }}</span></li>
+        <li><strong>Email</strong><span>{{ contact.email }}</span></li>
+        <li><strong>Hours</strong><span>{{ contact.working_hours }}</span></li>
+        <li><strong>Emergency</strong><span>{{ contact.emergency_contact }}</span></li>
+      </ul>
+      <div class="contact-actions">
+        <a href="https://wa.me/{{ contact.whatsapp }}" class="btn btn-dark btn-pill">WhatsApp Us</a>
+        <a href="tel:{{ contact.phone }}" class="btn btn-outline btn-pill">Call Now</a>
+      </div>
+    </div>
+    <div class="contact-map">
+      <iframe
+        title="Clinic location map"
+        src="https://www.google.com/maps?q={{ contact.map_embed_query | urlencode }}&output=embed"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

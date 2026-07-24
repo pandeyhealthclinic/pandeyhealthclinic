@@ -1,0 +1,8 @@
+{% for m in messages %}
+<div class="chat-bubble {{ 'chat-bubble--mine' if m.sender_role == 'admin' else '' }}">
+  <span class="chat-sender">{{ m.sender_name }}</span>
+  <p>{{ m.text }}</p>
+</div>
+{% else %}
+<p class="dashboard-empty">No messages yet in this thread.</p>
+{% endfor %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ medicine.name }} — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="store-section">
+  <div class="medicine-detail-grid">
+    <div class="medicine-detail-image">
+      <img src="{{ url_for('static', filename='images/' + medicine.image) }}" alt="{{ medicine.name }}" onerror="this.src='https://placehold.co/480x420/DCE6DE/0E3B32?text={{ medicine.name|urlencode }}'">
+      {% if medicine.prescription_required %}<span class="badge badge-rx">Rx Required</span>{% endif %}
+    </div>
+    <div class="medicine-detail-info">
+      <p class="eyebrow eyebrow-dark">{{ medicine.category }}</p>
+      <h1>{{ medicine.name }}</h1>
+      <p class="medicine-rating">★ {{ medicine.rating }} ({{ medicine.review_count }} reviews)</p>
+      <p>{{ medicine.description }}</p>
+      <div class="medicine-price-row" style="font-size:1.3rem;">
+        <span class="medicine-offer">₹{{ medicine.offer_price }}</span>
+        <span class="medicine-mrp">₹{{ medicine.mrp }}</span>
+      </div>
+      <p class="stock-status {{ 'stock-out' if medicine.stock <= 0 else 'stock-in' }}">
+        {{ 'Out of Stock' if medicine.stock <= 0 else (medicine.stock ~ ' in stock') }}
+      </p>
+
+      {% if medicine.prescription_required %}
+      <div class="auth-notice">A valid prescription will be required at checkout for this item.</div>
+      {% endif %}
+
+      <form action="{{ url_for('medicines.add_to_cart') }}" method="post" class="qty-form">
+        <input type="hidden" name="medicine_id" value="{{ medicine.id }}">
+        <label>Qty
+          <input type="number" name="qty" value="1" min="1" max="{{ medicine.stock if medicine.stock > 0 else 1 }}" {% if medicine.stock <= 0 %}disabled{% endif %}>
+        </label>
+        <button type="submit" class="btn btn-outline btn-pill" {% if medicine.stock <= 0 %}disabled{% endif %}>Add to Cart</button>
+        <button type="submit" name="buy_now" value="1" class="btn btn-dark btn-pill" {% if medicine.stock <= 0 %}disabled{% endif %}>Buy Now</button>
+      </form>
+
+      <form action="{{ url_for('medicines.toggle_wishlist') }}" method="post" style="margin-top:0.8rem;">
+        <input type="hidden" name="medicine_id" value="{{ medicine.id }}">
+        <button type="submit" class="link-btn">{{ '♥ Saved to Wishlist' if in_wishlist else '♡ Add to Wishlist' }}</button>
+      </form>
+    </div>
+  </div>
+
+  {% if related %}
+  <h2 style="margin-top:3.5rem;">You may also need</h2>
+  <div class="medicine-grid">
+    {% for m in related %}
+    <article class="medicine-card">
+      <div class="medicine-image">
+        <img src="{{ url_for('static', filename='images/' + m.image) }}" alt="{{ m.name }}" onerror="this.src='https://placehold.co/320x220/DCE6DE/0E3B32?text={{ m.name|urlencode }}'">
+      </div>
+      <div class="medicine-body">
+        <a href="{{ url_for('medicines.detail', medicine_id=m.id) }}"><h3>{{ m.name }}</h3></a>
+        <div class="medicine-price-row">
+          <span class="medicine-offer">₹{{ m.offer_price }}</span>
+          <span class="medicine-mrp">₹{{ m.mrp }}</span>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

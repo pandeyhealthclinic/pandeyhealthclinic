@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}My Profile — {{ CLINIC_NAME }}{% endblock %}
+{% block content %}
+<section class="dashboard">
+  {% include "partials/patient_subnav.html" %}
+  <p class="eyebrow eyebrow-dark">My Profile</p>
+  <h1>{{ user.name if user and user.name else 'Your Profile' }}</h1>
+
+  <div class="dashboard-card" style="max-width:480px;">
+    <ul class="contact-list">
+      <li><strong>Name</strong><span>{{ user.name|default('Not set') }}</span></li>
+      <li><strong>Email</strong><span>{{ user.email|default('') }}</span></li>
+      <li><strong>Phone</strong><span>{{ user.phone|default('Not set') }}</span></li>
+    </ul>
+    <a href="{{ url_for('patient.profile_edit') }}" class="btn btn-dark btn-pill">Edit Profile</a>
+    <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline btn-pill">Back to Dashboard</a>
+  </div>
+</section>
+{% endblock %}
