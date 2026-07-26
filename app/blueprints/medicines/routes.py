@@ -218,3 +218,55 @@ def order_confirmation(order_id):
         if doc.exists and doc.to_dict().get("patient_uid") == g.user["uid"]:
             order = {**doc.to_dict(), "id": doc.id}
     return render_template("medicines/order_confirmation.html", order=order)
+
+
+@medicines_bp.route("/order/<order_id>/return-request", methods=["POST"])
+@login_required
+def order_return_request(order_id):
+    """Patient requests a return or exchange on a delivered order.
+
+    Stores the request on the order doc under `return_request` so the
+    admin panel can see and action it; doesn't change the order's main
+    `status` (delivery pipeline) since the return is tracked separately.
+    """
+    db = get_db()
+    if db is None:
+        flash("Order system isn't connected yet.", "info")
+        return redirect(url_for("patient.dashboard"))
+
+    order_ref = db.collection("orders").document(order_id)
+    doc = order_ref.get()
+    if not doc.exists or doc.to_dict().get("patient_uid") != g.user["uid"]:
+        flash("Order not found.", "error")
+        return redirect(url_for("patient.dashboard"))
+
+    order = doc.to_dict()
+    if order.get("status") != "delivered":
+        flash("Return/exchange can only be requested after an order is delivered.", "error")
+        return redirect(url_for("patient.dashboard"))
+
+    if order.get("return_request", {}).get("status") == "requested":
+        flash("You've already submitted a request for this order — the clinic will follow up soon.", "info")
+        return redirect(url_for("patient.dashboard"))
+
+    request_type = request.form.get("request_type")
+    reason = request.form.get("reason", "").strip()
+    if request_type not in ("return", "exchange"):
+        flash("Please choose whether this is a return or an exchange.", "error")
+        return redirect(url_for("patient.dashboard"))
+    if not reason:
+        flash("Please tell us the reason for the return/exchange.", "error")
+        return redirect(url_for("patient.dashboard"))
+
+    order_ref.update(
+        {
+            "return_request": {
+                "type": request_type,
+                "reason": reason,
+                "status": "requested",
+                "requested_at": datetime.datetime.utcnow().isoformat(),
+            }
+        }
+    )
+    flash(f"Your {request_type} request has been submitted — the clinic will contact you shortly.", "info")
+    return redirect(url_for("patient.dashboard"))
