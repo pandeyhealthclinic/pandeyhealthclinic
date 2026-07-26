@@ -404,7 +404,6 @@ section{
   .nav-location{ display:none; }
   .chat-form{ flex-direction:column; }
   .chat-bubble{ max-width:90%; }
-  .cart-row{ grid-template-columns:60px 1fr; }
 }
 
 @media (max-width: 400px){
@@ -624,6 +623,21 @@ a:focus-visible, button:focus-visible{
 .tracker-line.is-done{ background:var(--teal-900); }
 @keyframes tracker-pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(216,231,80,0.5); } 50%{ box-shadow:0 0 0 5px rgba(216,231,80,0); } }
 
+/* Compact mode on narrow screens: shrink steps/lines and hide labels for
+   non-current steps so the whole tracker fits without relying on a hidden
+   horizontal scrollbar (which looked like cut-off/broken content on mobile). */
+@media (max-width: 480px){
+  .order-tracker{ gap:0.15rem; overflow-x:visible; }
+  .tracker-step{ width:auto; min-width:30px; }
+  .tracker-dot{ width:20px; height:20px; font-size:0.62rem; }
+  .tracker-line{ width:10px; margin-top:9px; }
+  .tracker-label{ display:none; }
+  .tracker-step.is-current .tracker-label{
+    display:block; font-size:0.6rem; position:absolute; margin-top:26px; white-space:nowrap;
+  }
+  .tracker-step{ position:relative; }
+}
+
 /* ---------- Qty stepper (cart) ---------- */
 .qty-stepper{ display:flex; align-items:center; gap:0.5rem; }
 .qty-stepper form{ display:inline; }
@@ -714,5 +728,17 @@ a:focus-visible, button:focus-visible{
 }
 @media (max-width: 620px){
   .medicine-grid{ grid-template-columns:1fr; }
-  .cart-row{ grid-template-columns:60px 1fr; grid-template-areas:"img info" "qty total" "remove remove"; }
+  .cart-row{
+    grid-template-columns:60px 1fr;
+    grid-template-areas:
+      "img info"
+      "qty qty"
+      "total remove";
+    row-gap:0.6rem;
+  }
+  .cart-row img{ grid-area:img; }
+  .cart-row-info{ grid-area:info; }
+  .qty-stepper{ grid-area:qty; justify-self:start; }
+  .cart-line-total{ grid-area:total; font-weight:700; align-self:center; }
+  .cart-row form:last-child{ grid-area:remove; justify-self:end; align-self:center; }
 }
