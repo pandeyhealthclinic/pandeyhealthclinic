@@ -244,6 +244,16 @@ function initAutoRefresh() {
       // in this exact container, and don't refresh a hidden tab.
       if (document.hidden) return;
 
+      // If an order-details modal (pure-CSS :target popup) is currently
+      // open inside this container, skip this refresh cycle entirely.
+      // Replacing innerHTML here would destroy and recreate the open
+      // modal's DOM node, which is what made it look like it randomly
+      // closed itself every few seconds.
+      if (!isChat && location.hash && location.hash.startsWith('#order-')) {
+        const openModal = el.querySelector(location.hash);
+        if (openModal) return;
+      }
+
       try {
         const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         if (!resp.ok) return;
