@@ -1,6 +1,6 @@
 <div class="admin-table-wrap">
   <table class="admin-table">
-    <thead><tr><th>Patient</th><th>Items</th><th>Total</th><th>Payment</th><th>Rx?</th><th>Status</th><th>Update</th></tr></thead>
+    <thead><tr><th>Patient</th><th>Items</th><th>Total</th><th>Payment</th><th>Rx?</th><th>Status</th><th>Return/Exchange</th><th>Update</th></tr></thead>
     <tbody>
       {% for o in orders %}
       <tr>
@@ -14,6 +14,28 @@
         <td>{{ o.payment_method|default('cod')|upper }}</td>
         <td>{{ 'Yes' if o.needs_prescription else 'No' }}</td>
         <td><span class="status-pill status-{{ o.status|default('pending') }}">{{ o.status|default('pending') }}</span></td>
+        <td>
+          {% if o.return_request %}
+            <span class="status-pill status-{{ 'approved' if o.return_request.status in ('approved','completed') else ('rejected' if o.return_request.status == 'rejected' else 'pending') }}">
+              {{ o.return_request.type|capitalize }} — {{ o.return_request.status|capitalize }}
+            </span>
+            <div title="{{ o.return_request.reason }}" style="font-size:0.75rem;color:var(--ink-soft);max-width:180px;white-space:normal;">{{ o.return_request.reason }}</div>
+            {% if o.return_request.status == 'requested' %}
+            <div class="table-actions" style="margin-top:0.4rem;">
+              <form action="{{ url_for('admin.order_return_status', order_id=o.id) }}" method="post">
+                <input type="hidden" name="decision" value="approved">
+                <button type="submit" class="link-btn">Approve</button>
+              </form>
+              <form action="{{ url_for('admin.order_return_status', order_id=o.id) }}" method="post">
+                <input type="hidden" name="decision" value="rejected">
+                <button type="submit" class="link-btn link-btn--danger">Reject</button>
+              </form>
+            </div>
+            {% endif %}
+          {% else %}
+            <span style="color:var(--ink-soft);font-size:0.85rem;">—</span>
+          {% endif %}
+        </td>
         <td class="table-actions">
           <form action="{{ url_for('admin.order_status', order_id=o.id) }}" method="post">
             <select name="status" onchange="this.form.submit()">
@@ -25,7 +47,7 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="7">No orders found.</td></tr>
+      <tr><td colspan="8">No orders found.</td></tr>
       {% endfor %}
     </tbody>
   </table>
