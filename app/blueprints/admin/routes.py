@@ -359,6 +359,37 @@ def order_status(order_id):
     return redirect(url_for("admin.orders_list"))
 
 
+@admin_bp.route("/orders/<order_id>/return-status", methods=["POST"])
+@admin_required
+def order_return_status(order_id):
+    db = _require_db()
+    decision = request.form.get("decision")
+    if db is not None and decision in ("approved", "rejected"):
+        doc_ref = db.collection("orders").document(order_id)
+        doc = doc_ref.get()
+        order = doc.to_dict() if doc.exists else {}
+        return_request = order.get("return_request")
+
+        if return_request:
+            return_request["status"] = decision
+            doc_ref.update({"return_request": return_request})
+
+            if order.get("patient_uid"):
+                from app.utils.notifications import notify
+
+                request_type = return_request.get("type", "return")
+                notify(
+                    order["patient_uid"],
+                    f"Your {request_type} request was {decision}.",
+                    link="/dashboard/",
+                )
+
+            flash(f"Return/exchange request {decision}.", "info")
+        else:
+            flash("No return/exchange request found on this order.", "error")
+    return redirect(url_for("admin.orders_list"))
+
+
 # ---------------------------------------------------------------- Testimonials
 
 @admin_bp.route("/testimonials")
