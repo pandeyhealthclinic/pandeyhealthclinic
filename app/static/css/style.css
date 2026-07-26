@@ -682,6 +682,15 @@ a:focus-visible, button:focus-visible{
   .order-modal-card{ padding:1.5rem; max-height:90vh; }
 }
 
+/* ---------- Return / Exchange request (order modal) ---------- */
+.return-exchange-block{ margin-top:1.2rem; padding-top:1.2rem; border-top:1px solid var(--line); }
+.return-exchange-form{ display:flex; flex-direction:column; gap:0.7rem; }
+.return-exchange-form select, .return-exchange-form textarea{
+  font-family:var(--font-body); padding:0.7em 0.9em; border-radius:var(--radius-md);
+  border:1.5px solid var(--line); background:#fff; font-size:0.9rem;
+}
+.return-exchange-form select:focus, .return-exchange-form textarea:focus{ outline:none; border-color:var(--teal-900); }
+
 /* ---------- Patient sub-navigation (Home / Store / Book / Profile) ---------- */
 .patient-subnav{
   display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:2rem;
