@@ -1,6 +1,6 @@
 <div class="admin-table-wrap">
   <table class="admin-table">
-    <thead><tr><th>Patient</th><th>Items</th><th>Total</th><th>Payment</th><th>Rx?</th><th>Status</th><th>Return/Exchange</th><th>Update</th></tr></thead>
+    <thead><tr><th>Patient</th><th>Items</th><th>Delivery Address</th><th>Total</th><th>Payment</th><th>Rx?</th><th>Status</th><th>Return/Exchange</th><th>Update</th></tr></thead>
     <tbody>
       {% for o in orders %}
       <tr>
@@ -10,6 +10,7 @@
           {{ item.name }} ×{{ item.qty }}{% if not loop.last %}, {% endif %}
           {% endfor %}
         </td>
+        <td style="white-space:normal; max-width:220px;">{{ o.address|default('Not provided') }}</td>
         <td>₹{{ o.total|default(0) }}</td>
         <td>{{ o.payment_method|default('cod')|upper }}</td>
         <td>{{ 'Yes' if o.needs_prescription else 'No' }}</td>
@@ -47,7 +48,7 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="8">No orders found.</td></tr>
+      <tr><td colspan="9">No orders found.</td></tr>
       {% endfor %}
     </tbody>
   </table>
