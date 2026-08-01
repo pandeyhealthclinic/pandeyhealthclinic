@@ -50,6 +50,7 @@ def register_blueprints(app):
     from app.blueprints.appointments.routes import appointments_bp
     from app.blueprints.medicines.routes import medicines_bp
     from app.blueprints.admin.routes import admin_bp
+    from app.blueprints.leads.routes import leads_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
@@ -57,6 +58,7 @@ def register_blueprints(app):
     app.register_blueprint(appointments_bp)
     app.register_blueprint(medicines_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(leads_bp)
 
 
 def register_context_processors(app):
