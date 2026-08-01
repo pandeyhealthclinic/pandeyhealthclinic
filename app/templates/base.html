@@ -36,6 +36,7 @@
 <main>
 {% block content %}{% endblock %}
 </main>
+{% include "partials/lead_popup.html" %}
 {% include "partials/footer.html" %}
 {% if FIREBASE_READY %}
 <script type="module">
