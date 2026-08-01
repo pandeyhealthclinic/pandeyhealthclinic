@@ -1,19 +1,33 @@
 """
-Firebase Storage helper for patient-uploaded files (previous reports,
-prescriptions, gallery photos, etc.). Returns None instead of raising
-when Storage isn't configured, so the calling route can degrade
-gracefully rather than 500.
-"""
-import datetime
-import logging
-import uuid
+Image/file "upload" helper — stores files as base64 data URIs directly
+inside Firestore documents instead of using Firebase Cloud Storage.
 
-from app.firebase import get_bucket
+Why: Cloud Storage requires the Blaze (pay-as-you-go) Firebase plan.
+Firestore and Realtime Database both work on the free Spark plan, so
+this avoids Storage entirely — no bucket, no billing account needed.
+
+Trade-off: Firestore caps each document at 1 MiB, and base64 encoding
+adds ~33% overhead. MAX_REPORT_BYTES is set well under that ceiling so
+a document still has room left for its other fields (patient name,
+items, status, etc). This is fine for gallery photos and prescription
+snapshots; it is NOT meant for large/high-res files — encourage users
+to upload a reasonably sized image (a phone photo often needs
+resizing first).
+"""
+import base64
+import logging
 
 logger = logging.getLogger(__name__)
 
 ALLOWED_EXTENSIONS = {"pdf", "png", "jpg", "jpeg", "webp"}
-MAX_REPORT_BYTES = 8 * 1024 * 1024  # 8 MB
+MIME_TYPES = {
+    "pdf": "application/pdf",
+    "png": "image/png",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "webp": "image/webp",
+}
+MAX_REPORT_BYTES = 500 * 1024  # 500 KB raw (~667 KB once base64-encoded)
 
 
 def _extension(filename):
@@ -21,13 +35,19 @@ def _extension(filename):
 
 
 def upload_patient_report(file_storage, patient_uid, subfolder="reports"):
-    """Upload a werkzeug FileStorage to Storage under {subfolder}/{uid}/{uuid}.ext.
+    """Encode an uploaded file as a base64 data: URI.
 
-    Returns a URL the browser can load directly, or None if:
+    `patient_uid` and `subfolder` are no longer used for a storage path
+    (kept in the signature so every existing call site — appointment
+    report uploads, admin gallery uploads — needs no changes) but are
+    accepted for future use (e.g. if a real object store is added back
+    later).
+
+    Returns a "data:<mime>;base64,<...>" string ready to drop straight
+    into an <img src> or <a href>, or None if:
       - no file was provided
-      - Storage isn't configured (offline mode)
-      - the file fails validation (extension/size)
-      - the upload itself fails
+      - the extension isn't allowed
+      - the file is too large for a Firestore document
     """
     if file_storage is None or not file_storage.filename:
         return None
@@ -37,49 +57,22 @@ def upload_patient_report(file_storage, patient_uid, subfolder="reports"):
         logger.warning("Rejected upload with disallowed extension: %s", ext)
         return None
 
-    # Enforce the size cap (previously defined but never actually checked).
     file_storage.stream.seek(0, 2)  # seek to end
     size = file_storage.stream.tell()
     file_storage.stream.seek(0)
     if size > MAX_REPORT_BYTES:
-        logger.warning("Rejected upload — %d bytes exceeds %d byte limit.", size, MAX_REPORT_BYTES)
-        return None
-
-    bucket = get_bucket()
-    if bucket is None:
-        logger.warning("Storage not configured — skipping upload (offline mode).")
-        return None
-
-    try:
-        blob_path = f"{subfolder}/{patient_uid}/{uuid.uuid4().hex}.{ext}"
-        blob = bucket.blob(blob_path)
-        blob.upload_from_file(file_storage.stream, content_type=file_storage.mimetype)
-    except Exception as exc:  # noqa: BLE001
-        logger.error("Upload to Storage failed: %s", exc)
-        return None
-
-    # Try to make the object publicly readable via legacy ACLs. Most new
-    # Firebase Storage buckets have "Uniform Bucket-Level Access" enabled
-    # by default, which makes make_public() raise — every single upload
-    # was silently failing here before. Fall back to a long-lived signed
-    # URL, which works regardless of the bucket's ACL/UBLA setting.
-    try:
-        blob.make_public()
-        return blob.public_url
-    except Exception as exc:  # noqa: BLE001
-        logger.info("make_public() unavailable (likely Uniform Bucket-Level Access) — using a signed URL instead: %s", exc)
-
-    try:
-        return blob.generate_signed_url(
-            version="v4",
-            expiration=datetime.timedelta(days=3650),
-            method="GET",
-        )
-    except Exception as exc:  # noqa: BLE001
-        logger.error(
-            "Could not generate a signed URL either — the upload succeeded but no browsable "
-            "link could be created. Grant the Firebase service account the 'Service Account "
-            "Token Creator' IAM role in Google Cloud Console to fix this. Error: %s", exc
+        logger.warning(
+            "Rejected upload — %d bytes exceeds the %d byte limit for inline Firestore "
+            "storage. Ask the user to upload a smaller/compressed file.",
+            size, MAX_REPORT_BYTES,
         )
         return None
-        
+
+    try:
+        raw = file_storage.stream.read()
+        encoded = base64.b64encode(raw).decode("ascii")
+        mime = MIME_TYPES.get(ext, file_storage.mimetype or "application/octet-stream")
+        return f"data:{mime};base64,{encoded}"
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Failed to encode upload as base64: %s", exc)
+        return None
