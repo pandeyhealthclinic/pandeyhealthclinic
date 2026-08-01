@@ -532,4 +532,149 @@ def _fetch_consultation_threads():
                 db.collection("appointments").document(a.id).collection("messages").stream()
             )
             messages_sorted = sorted((m.to_dict() for m in messages), key=lambda m: m.get("created_at", ""))
-            last_message = messages_sorted[-1] i
+            last_message = messages_sorted[-1] if messages_sorted else None
+            unread = sum(
+                1 for m in messages_sorted
+                if m.get("sender_role") != "admin" and not m.get("read_by_admin", False)
+            )
+            threads.append(
+                {
+                    **appt,
+                    "message_count": len(messages_sorted),
+                    "last_message": last_message,
+                    "unread_count": unread,
+                }
+            )
+        threads.sort(
+            key=lambda t: (t["last_message"]["created_at"] if t["last_message"] else t.get("date", "")),
+            reverse=True,
+        )
+    return threads
+
+
+@admin_bp.route("/consultations/<appointment_id>")
+@admin_required
+def consultation_thread(appointment_id):
+    db = _require_db()
+    if db is None:
+        flash("Firebase isn't configured yet.", "error")
+        return redirect(url_for("admin.consultations_list"))
+
+    doc = db.collection("appointments").document(appointment_id).get()
+    if not doc.exists:
+        flash("Consultation not found.", "error")
+        return redirect(url_for("admin.consultations_list"))
+
+    appointment = {**doc.to_dict(), "id": doc.id}
+
+    messages_ref = db.collection("appointments").document(appointment_id).collection("messages")
+    messages = [{**m.to_dict(), "id": m.id} for m in messages_ref.stream()]
+    messages.sort(key=lambda m: m.get("created_at", ""))
+
+    # Mark incoming (patient) messages as read the moment admin opens the thread.
+    for m in messages:
+        if m.get("sender_role") != "admin" and not m.get("read_by_admin", False):
+            messages_ref.document(m["id"]).update({"read_by_admin": True})
+
+    return render_template("admin/consultation_thread.html", appointment=appointment, messages=messages)
+
+
+@admin_bp.route("/consultations/<appointment_id>/messages")
+@admin_required
+def consultation_messages_fragment(appointment_id):
+    db = _require_db()
+    if db is None:
+        return "", 204
+
+    messages_ref = db.collection("appointments").document(appointment_id).collection("messages")
+    messages = [{**m.to_dict(), "id": m.id} for m in messages_ref.stream()]
+    messages.sort(key=lambda m: m.get("created_at", ""))
+
+    for m in messages:
+        if m.get("sender_role") != "admin" and not m.get("read_by_admin", False):
+            messages_ref.document(m["id"]).update({"read_by_admin": True})
+
+    return render_template("admin/_consultation_messages.html", messages=messages)
+
+
+@admin_bp.route("/consultations/<appointment_id>/message", methods=["POST"])
+@admin_required
+def consultation_reply(appointment_id):
+    db = _require_db()
+    if db is None:
+        return redirect(url_for("admin.consultations_list"))
+
+    doc_ref = db.collection("appointments").document(appointment_id)
+    doc = doc_ref.get()
+    if not doc.exists:
+        flash("Consultation not found.", "error")
+        return redirect(url_for("admin.consultations_list"))
+
+    appointment = doc.to_dict()
+    text = request.form.get("text", "").strip()
+    if text:
+        doc_ref.collection("messages").document().set(
+            {
+                "sender_uid": "admin",
+                "sender_name": f"{app_config_clinic_name()} Team",
+                "sender_role": "admin",
+                "text": text,
+                "read_by_admin": True,
+                "created_at": datetime.datetime.utcnow().isoformat(),
+            }
+        )
+        if appointment.get("patient_uid"):
+            from app.utils.notifications import notify
+
+            notify(
+                appointment["patient_uid"],
+                "The clinic replied to your consultation chat.",
+                link=f"/appointments/{appointment_id}/consult",
+            )
+
+    return redirect(url_for("admin.consultation_thread", appointment_id=appointment_id))
+
+
+def app_config_clinic_name():
+    from flask import current_app
+
+    return current_app.config.get("CLINIC_NAME", "Pandey Health Clinic")
+
+
+# ---------------------------------------------------------------- Site CMS
+
+CMS_SECTIONS = {
+    "hero": content.get_hero,
+    "about": content.get_about,
+    "vision": content.get_vision,
+    "doctor": content.get_doctor,
+    "contact": content.get_contact,
+}
+
+
+@admin_bp.route("/content")
+@admin_required
+def content_list():
+    sections = {name: getter() for name, getter in CMS_SECTIONS.items()}
+    return render_template("admin/content.html", sections=sections)
+
+
+@admin_bp.route("/content/<section>", methods=["POST"])
+@admin_required
+def content_save(section):
+    if section not in CMS_SECTIONS:
+        flash("Unknown content section.", "error")
+        return redirect(url_for("admin.content_list"))
+
+    db = _require_db()
+    if db is None:
+        flash("Firebase isn't configured — can't save yet.", "error")
+        return redirect(url_for("admin.content_list"))
+
+    # Flat text-field sections only (hero/about/doctor/contact). Vision's
+    # nested "points" list isn't editable from this simple form yet —
+    # it still displays live from Firestore/seed data.
+    payload = {k: v for k, v in request.form.items() if k != "csrf_token"}
+    db.collection("site_content").document(section).set(payload, merge=True)
+    flash(f"{section.capitalize()} content updated.", "info")
+    return redirect(url_for("admin.content_list"))
