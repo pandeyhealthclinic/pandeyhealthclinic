@@ -14,23 +14,25 @@
 <div id="pageProgressBar" class="page-progress-bar"></div>
 <div class="admin-shell">
   <aside class="admin-sidebar">
-    <a href="{{ url_for('admin.dashboard') }}" class="admin-brand">Pandey<span>Admin</span></a>
+    <a href="{{ safe_url_for('admin.dashboard') }}" class="admin-brand">Pandey<span>Admin</span></a>
     <nav>
-      <a href="{{ url_for('admin.dashboard') }}" class="{{ 'is-active' if request.endpoint == 'admin.dashboard' }}">Dashboard</a>
-      <a href="{{ url_for('admin.appointments_list') }}" class="{{ 'is-active' if request.endpoint == 'admin.appointments_list' }}">Appointments</a>
-      <a href="{{ url_for('admin.consultations_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.consultation') }}">Consultations{% if admin_unread_consultations %} <span class="sidebar-badge">{{ admin_unread_consultations }}</span>{% endif %}</a>
-      <a href="{{ url_for('admin.orders_list') }}" class="{{ 'is-active' if request.endpoint == 'admin.orders_list' }}">Orders</a>
-      <a href="{{ url_for('admin.services_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.service') }}">Services</a>
-      <a href="{{ url_for('admin.medicines_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.medicine') }}">Medicines</a>
-      <a href="{{ url_for('admin.patients_list') }}" class="{{ 'is-active' if request.endpoint == 'admin.patients_list' }}">Patients</a>
-      <a href="{{ url_for('admin.leads_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.lead') }}">Leads</a>
-      <a href="{{ url_for('admin.testimonials_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.testimonial') }}">Testimonials</a>
-      <a href="{{ url_for('admin.gallery_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.gallery') }}">Gallery</a>
-      <a href="{{ url_for('admin.content_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.content') }}">Website Content</a>
+      <a href="{{ safe_url_for('admin.dashboard') }}" class="{{ 'is-active' if request.endpoint == 'admin.dashboard' }}">Dashboard</a>
+      <a href="{{ safe_url_for('admin.appointments_list') }}" class="{{ 'is-active' if request.endpoint == 'admin.appointments_list' }}">Appointments</a>
+      <a href="{{ safe_url_for('admin.consultations_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.consultation') }}">Consultations{% if admin_unread_consultations %} <span class="sidebar-badge">{{ admin_unread_consultations }}</span>{% endif %}</a>
+      <a href="{{ safe_url_for('admin.orders_list') }}" class="{{ 'is-active' if request.endpoint == 'admin.orders_list' }}">Orders</a>
+      <a href="{{ safe_url_for('admin.services_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.service') }}">Services</a>
+      <a href="{{ safe_url_for('admin.medicines_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.medicine') }}">Medicines</a>
+      <a href="{{ safe_url_for('admin.patients_list') }}" class="{{ 'is-active' if request.endpoint == 'admin.patients_list' }}">Patients</a>
+      {% if has_endpoint('admin.leads_list') %}
+      <a href="{{ safe_url_for('admin.leads_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.lead') }}">Leads</a>
+      {% endif %}
+      <a href="{{ safe_url_for('admin.testimonials_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.testimonial') }}">Testimonials</a>
+      <a href="{{ safe_url_for('admin.gallery_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.gallery') }}">Gallery</a>
+      <a href="{{ safe_url_for('admin.content_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.content') }}">Website Content</a>
     </nav>
     <div class="admin-sidebar-footer">
-      <a href="{{ url_for('main.home') }}">View Site ↗</a>
-      <form action="{{ url_for('auth.logout') }}" method="post">
+      <a href="{{ safe_url_for('main.home') }}">View Site ↗</a>
+      <form action="{{ safe_url_for('auth.logout') }}" method="post">
         <button type="submit">Log Out</button>
       </form>
     </div>
