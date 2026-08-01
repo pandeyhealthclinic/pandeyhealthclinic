@@ -359,37 +359,6 @@ def order_status(order_id):
     return redirect(url_for("admin.orders_list"))
 
 
-@admin_bp.route("/orders/<order_id>/return-status", methods=["POST"])
-@admin_required
-def order_return_status(order_id):
-    db = _require_db()
-    decision = request.form.get("decision")
-    if db is not None and decision in ("approved", "rejected"):
-        doc_ref = db.collection("orders").document(order_id)
-        doc = doc_ref.get()
-        order = doc.to_dict() if doc.exists else {}
-        return_request = order.get("return_request")
-
-        if return_request:
-            return_request["status"] = decision
-            doc_ref.update({"return_request": return_request})
-
-            if order.get("patient_uid"):
-                from app.utils.notifications import notify
-
-                request_type = return_request.get("type", "return")
-                notify(
-                    order["patient_uid"],
-                    f"Your {request_type} request was {decision}.",
-                    link="/dashboard/",
-                )
-
-            flash(f"Return/exchange request {decision}.", "info")
-        else:
-            flash("No return/exchange request found on this order.", "error")
-    return redirect(url_for("admin.orders_list"))
-
-
 # ---------------------------------------------------------------- Testimonials
 
 @admin_bp.route("/testimonials")
@@ -462,17 +431,9 @@ def gallery_upload():
     category = request.form.get("category", "Clinic")
     caption = request.form.get("caption", "").strip()
 
-    if not image_file or not image_file.filename:
-        flash("Please choose a photo to upload.", "error")
-        return redirect(url_for("admin.gallery_list"))
-
-    image_url_result = upload_patient_report(image_file, "gallery", subfolder="gallery")
+    image_url_result = upload_patient_report(image_file, "gallery", subfolder="gallery") if image_file else None
     if not image_url_result:
-        flash(
-            "Upload failed — check that the file is a jpg/png/webp under 8MB. "
-            "If this keeps happening, see the server logs for the exact Storage error.",
-            "error",
-        )
+        flash("Please choose a valid image file (jpg/png/webp).", "error")
         return redirect(url_for("admin.gallery_list"))
 
     db.collection("gallery").document().set(
@@ -503,6 +464,31 @@ def patients_list():
         docs = db.collection("users").where("role", "==", "patient").stream()
         patients = [{**d.to_dict(), "id": d.id} for d in docs]
     return render_template("admin/patients.html", patients=patients)
+
+
+# ---------------------------------------------------------------- Leads (callback requests)
+
+@admin_bp.route("/leads")
+@admin_required
+def leads_list():
+    db = _require_db()
+    leads = []
+    if db is not None:
+        docs = db.collection("leads").stream()
+        leads = [{**d.to_dict(), "id": d.id} for d in docs]
+        leads.sort(key=lambda l: l.get("created_at", ""), reverse=True)
+    return render_template("admin/leads.html", leads=leads)
+
+
+@admin_bp.route("/leads/<lead_id>/status", methods=["POST"])
+@admin_required
+def lead_status(lead_id):
+    db = _require_db()
+    new_status = request.form.get("status")
+    if db is not None and new_status in ("new", "contacted", "converted", "not_interested"):
+        db.collection("leads").document(lead_id).update({"status": new_status})
+        flash(f"Lead marked as {new_status.replace('_', ' ')}.", "info")
+    return redirect(url_for("admin.leads_list"))
 
 
 # ---------------------------------------------------------------- Consultations (chat)
