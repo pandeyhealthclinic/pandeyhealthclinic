@@ -1,0 +1,39 @@
+{% extends "admin/layout.html" %}
+{% block title %}Leads — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <p class="eyebrow eyebrow-dark">Manage</p>
+    <h1>Callback Requests</h1>
+    <p style="margin-top:0.4rem;">Captured from the "want a callback?" popup on the public site.</p>
+  </div>
+</div>
+
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Phone</th><th>Page</th><th>Received</th><th>Status</th><th>Update</th></tr></thead>
+    <tbody>
+      {% for l in leads %}
+      <tr>
+        <td>{{ l.name }}</td>
+        <td><a href="tel:{{ l.phone }}" class="link-btn">{{ l.phone }}</a></td>
+        <td>{{ l.page|default('—') }}</td>
+        <td>{{ l.created_at|default('')|truncate(19, True, '') }}</td>
+        <td><span class="status-pill status-{{ 'approved' if l.status == 'converted' else ('pending' if l.status in ('new','contacted') else 'rejected') }}">{{ l.status|default('new')|replace('_',' ')|capitalize }}</span></td>
+        <td class="table-actions">
+          <form action="{{ url_for('admin.lead_status', lead_id=l.id) }}" method="post">
+            <select name="status" onchange="this.form.submit()">
+              {% for s in ['new','contacted','converted','not_interested'] %}
+              <option value="{{ s }}" {% if l.status == s %}selected{% endif %}>{{ s|replace('_',' ')|capitalize }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">No callback requests yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
