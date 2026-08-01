@@ -23,6 +23,7 @@
       <a href="{{ url_for('admin.services_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.service') }}">Services</a>
       <a href="{{ url_for('admin.medicines_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.medicine') }}">Medicines</a>
       <a href="{{ url_for('admin.patients_list') }}" class="{{ 'is-active' if request.endpoint == 'admin.patients_list' }}">Patients</a>
+      <a href="{{ url_for('admin.leads_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.lead') }}">Leads</a>
       <a href="{{ url_for('admin.testimonials_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.testimonial') }}">Testimonials</a>
       <a href="{{ url_for('admin.gallery_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.gallery') }}">Gallery</a>
       <a href="{{ url_for('admin.content_list') }}" class="{{ 'is-active' if request.endpoint and request.endpoint.startswith('admin.content') }}">Website Content</a>
