@@ -1,0 +1,21 @@
+<!--
+  Lead-capture popup — deliberately NOT a full-screen modal.
+  It slides in from the corner, has no backdrop, and never blocks
+  clicks/scroll on the rest of the page. Timing/visibility logic
+  lives in main.js (initLeadPopup). Submits to /leads/capture.
+-->
+<div id="leadPopup" class="lead-popup" role="complementary" aria-label="Request a callback" hidden>
+  <button type="button" class="lead-popup-close" id="leadPopupClose" aria-label="Close">×</button>
+  <div class="lead-popup-body">
+    <p class="lead-popup-eyebrow">Quick Question</p>
+    <h4>Want a callback from the clinic?</h4>
+    <p class="lead-popup-sub">Leave your name and number — {{ DOCTOR_NAME }}'s team will call you back.</p>
+    <form id="leadPopupForm">
+      <input type="text" name="name" placeholder="Your name" required maxlength="80">
+      <input type="tel" name="phone" placeholder="Phone number" required pattern="[0-9+\-\s]{7,15}" maxlength="15">
+      <button type="submit" class="btn btn-dark btn-pill btn-block">Request Callback</button>
+    </form>
+    <p class="lead-popup-status" id="leadPopupStatus" role="status"></p>
+    <p class="lead-popup-skip"><button type="button" id="leadPopupSkip">No thanks, just browsing</button></p>
+  </div>
+</div>
