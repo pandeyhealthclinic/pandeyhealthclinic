@@ -67,13 +67,62 @@ def init_firebase(app):
             )
 
         _firestore_client = firestore.client()
-        _bucket = storage.bucket() if bucket_name else None
+        _bucket = _resolve_storage_bucket(storage, bucket_name) if bucket_name else None
         _firebase_ready = True
         logger.info("Firebase initialized successfully from %s.", source)
     except Exception as exc:  # noqa: BLE001 - we want the site to keep running
         logger.error("Firebase initialization failed, using seed data: %s", exc)
         _firestore_client = None
         _bucket = None
+
+
+def _resolve_storage_bucket(storage, configured_name):
+    """Return a Storage bucket handle that actually exists.
+
+    Firebase has used two different bucket-naming conventions for the
+    "default" bucket depending on when the project was created:
+      - older projects:  <project-id>.appspot.com
+      - newer projects:  <project-id>.firebasestorage.app
+
+    The Firebase console shows one or the other, and it's easy to have
+    FIREBASE_STORAGE_BUCKET set to a name that *looks* right but isn't
+    the real underlying GCS bucket — every upload then fails with a
+    404 "specified bucket does not exist". This checks the configured
+    name and, if it doesn't actually exist, tries the other convention
+    automatically so uploads work regardless of which one is set.
+    """
+    candidates = [configured_name]
+    if configured_name.endswith(".firebasestorage.app"):
+        candidates.append(configured_name.replace(".firebasestorage.app", ".appspot.com"))
+    elif configured_name.endswith(".appspot.com"):
+        candidates.append(configured_name.replace(".appspot.com", ".firebasestorage.app"))
+
+    for name in candidates:
+        try:
+            bucket = storage.bucket(name)
+            if bucket.exists():
+                if name != configured_name:
+                    logger.warning(
+                        "FIREBASE_STORAGE_BUCKET is set to '%s' but that bucket doesn't "
+                        "exist — using '%s' instead, which does. Update the env var to "
+                        "'%s' to avoid this check on every restart.",
+                        configured_name, name, name,
+                    )
+                else:
+                    logger.info("Storage bucket '%s' confirmed.", name)
+                return bucket
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("Bucket candidate '%s' failed existence check: %s", name, exc)
+
+    logger.error(
+        "Could not find a working Storage bucket — tried %s. Uploads (gallery photos, "
+        "patient reports) will fail until FIREBASE_STORAGE_BUCKET points at a bucket "
+        "that actually exists (check the exact name under Firebase Console > Storage).",
+        candidates,
+    )
+    # Fall back to the configured name anyway so the error surfaces clearly
+    # in logs at upload time rather than masking the misconfiguration.
+    return storage.bucket(configured_name)
 
 
 def get_db():
