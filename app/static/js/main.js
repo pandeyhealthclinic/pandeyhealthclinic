@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNotificationPolling();
   initToastAutoDismiss();
   initAutoRefresh();
+  initLeadPopup();
   document.body.classList.add('page-ready');
 });
 
@@ -244,16 +245,6 @@ function initAutoRefresh() {
       // in this exact container, and don't refresh a hidden tab.
       if (document.hidden) return;
 
-      // If an order-details modal (pure-CSS :target popup) is currently
-      // open inside this container, skip this refresh cycle entirely.
-      // Replacing innerHTML here would destroy and recreate the open
-      // modal's DOM node, which is what made it look like it randomly
-      // closed itself every few seconds.
-      if (!isChat && location.hash && location.hash.startsWith('#order-')) {
-        const openModal = el.querySelector(location.hash);
-        if (openModal) return;
-      }
-
       try {
         const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         if (!resp.ok) return;
@@ -282,4 +273,98 @@ function initAutoRefresh() {
       }
     }, interval);
   });
+}
+
+// ---------------------------------------------------------------------
+// 6. Lead-capture popup — non-blocking, random-interval "ask for a
+//    callback" card. Deliberately NOT a modal: no backdrop, doesn't
+//    block scrolling or clicking anything else on the page, and is
+//    trivial to dismiss. Shows a couple of times per browsing session
+//    at random-ish intervals, then backs off — this is meant to catch
+//    people who are "just looking" for cold outreach, not to nag.
+// ---------------------------------------------------------------------
+function initLeadPopup() {
+  const popup = document.getElementById('leadPopup');
+  if (!popup) return;
+
+  // Skip entirely on pages where a popup asking "want a callback?"
+  // would be intrusive or redundant (mid-task flows, auth, dashboard).
+  const skipPaths = ['/auth/', '/dashboard', '/appointments/book', '/medicines/checkout', '/medicines/cart'];
+  if (skipPaths.some((p) => location.pathname.startsWith(p))) return;
+
+  const SUBMITTED_KEY = 'clinicLeadSubmittedAt';
+  const DISMISS_COUNT_KEY = 'clinicLeadDismissCount'; // sessionStorage — resets each new browsing session
+  const SUBMITTED_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000; // don't ask again for 30 days after they submit
+  const MAX_SHOWS_PER_SESSION = 2;
+
+  // Already submitted recently? Never show again until the cooldown passes.
+  const submittedAt = parseInt(localStorage.getItem(SUBMITTED_KEY) || '0', 10);
+  if (submittedAt && Date.now() - submittedAt < SUBMITTED_COOLDOWN_MS) return;
+
+  let shownCount = parseInt(sessionStorage.getItem(DISMISS_COUNT_KEY) || '0', 10);
+
+  function randomBetween(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function showPopup() {
+    if (shownCount >= MAX_SHOWS_PER_SESSION) return;
+    popup.hidden = false;
+    requestAnimationFrame(() => popup.classList.add('is-visible'));
+  }
+
+  function hidePopup() {
+    popup.classList.remove('is-visible');
+    setTimeout(() => { popup.hidden = true; }, 300); // match CSS transition
+  }
+
+  function scheduleNext(delayMs) {
+    setTimeout(showPopup, delayMs);
+  }
+
+  function dismiss() {
+    shownCount += 1;
+    sessionStorage.setItem(DISMISS_COUNT_KEY, String(shownCount));
+    hidePopup();
+    if (shownCount < MAX_SHOWS_PER_SESSION) {
+      scheduleNext(randomBetween(90000, 180000)); // 1.5–3 min later
+    }
+  }
+
+  document.getElementById('leadPopupClose').addEventListener('click', dismiss);
+  document.getElementById('leadPopupSkip').addEventListener('click', dismiss);
+
+  const form = document.getElementById('leadPopupForm');
+  const status = document.getElementById('leadPopupStatus');
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = form.name.value.trim();
+    const phone = form.phone.value.trim();
+    status.textContent = 'Sending...';
+    status.className = 'lead-popup-status';
+
+    try {
+      const resp = await fetch('/leads/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, page: location.pathname }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Something went wrong.');
+
+      status.textContent = "Thanks — we'll call you back soon!";
+      status.className = 'lead-popup-status lead-popup-status--ok';
+      localStorage.setItem(SUBMITTED_KEY, String(Date.now()));
+      setTimeout(hidePopup, 2200);
+    } catch (err) {
+      status.textContent = err.message || 'Could not send — please try again.';
+      status.className = 'lead-popup-status lead-popup-status--error';
+    }
+  });
+
+  // First appearance: random delay so it doesn't feel like a scripted
+  // trigger tied to a specific scroll position or timer everyone hits
+  // at the same instant.
+  scheduleNext(randomBetween(20000, 45000));
 }
