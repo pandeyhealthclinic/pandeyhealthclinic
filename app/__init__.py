@@ -31,12 +31,14 @@ def register_template_globals(app):
     @app.template_global()
     def image_url(value, default=""):
         """Resolve an image field that may be a bare filename (served from
-        /static/images/) or a full URL (e.g. a Firebase Storage upload)."""
+        /static/images/), a full URL, or a base64 data: URI (images are
+        now stored directly in Firestore documents, not Cloud Storage,
+        since Storage requires a paid Firebase plan)."""
         from flask import url_for
 
         if not value:
             return default
-        if value.startswith("http://") or value.startswith("https://"):
+        if value.startswith("http://") or value.startswith("https://") or value.startswith("data:"):
             return value
         return url_for("static", filename=f"images/{value}")
 
