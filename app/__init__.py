@@ -42,6 +42,25 @@ def register_template_globals(app):
             return value
         return url_for("static", filename=f"images/{value}")
 
+    @app.template_global()
+    def safe_url_for(endpoint, **values):
+        """Like url_for, but never raises. If a template references a
+        route that doesn't exist on this deployment yet (e.g. a sidebar
+        link added before its blueprint was registered), this returns
+        '#' instead of crashing the entire page — one missing route
+        should never take down every page that shares a layout with it."""
+        from flask import url_for
+
+        try:
+            return url_for(endpoint, **values)
+        except Exception:  # noqa: BLE001
+            return "#"
+
+    @app.template_global()
+    def has_endpoint(endpoint):
+        """True if `endpoint` is a registered route on this app."""
+        return endpoint in app.view_functions
+
 
 def register_blueprints(app):
     from app.blueprints.main.routes import main_bp
