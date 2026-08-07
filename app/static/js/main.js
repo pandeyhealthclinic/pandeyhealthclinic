@@ -285,7 +285,8 @@ function initAutoRefresh() {
 // ---------------------------------------------------------------------
 function initLeadPopup() {
   const popup = document.getElementById('leadPopup');
-  if (!popup) return;
+  const scrim = document.getElementById('leadPopupScrim');
+  if (!popup || !scrim) return;
 
   // Skip entirely on pages where a popup asking "want a callback?"
   // would be intrusive or redundant (mid-task flows, auth, dashboard).
@@ -296,6 +297,7 @@ function initLeadPopup() {
   const DISMISS_COUNT_KEY = 'clinicLeadDismissCount'; // sessionStorage — resets each new browsing session
   const SUBMITTED_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000; // don't ask again for 30 days after they submit
   const MAX_SHOWS_PER_SESSION = 2;
+  const POSITIONS = ['lead-popup--center', 'lead-popup--top', 'lead-popup--top-right', 'lead-popup--bottom-right', 'lead-popup--bottom-left'];
 
   // Already submitted recently? Never show again until the cooldown passes.
   const submittedAt = parseInt(localStorage.getItem(SUBMITTED_KEY) || '0', 10);
@@ -307,15 +309,30 @@ function initLeadPopup() {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
+  function applyRandomPosition() {
+    POSITIONS.forEach((cls) => popup.classList.remove(cls));
+    const choice = POSITIONS[randomBetween(0, POSITIONS.length - 1)];
+    popup.classList.add(choice);
+    // The scrim only makes sense (and looks right) behind the centered
+    // variant — corner/top placements stay non-blocking with no dimming.
+    scrim.dataset.pairedWithCenter = choice === 'lead-popup--center' ? 'true' : 'false';
+  }
+
   function showPopup() {
     if (shownCount >= MAX_SHOWS_PER_SESSION) return;
+    applyRandomPosition();
     popup.hidden = false;
+    if (scrim.dataset.pairedWithCenter === 'true') {
+      scrim.hidden = false;
+      requestAnimationFrame(() => scrim.classList.add('is-visible'));
+    }
     requestAnimationFrame(() => popup.classList.add('is-visible'));
   }
 
   function hidePopup() {
     popup.classList.remove('is-visible');
-    setTimeout(() => { popup.hidden = true; }, 300); // match CSS transition
+    scrim.classList.remove('is-visible');
+    setTimeout(() => { popup.hidden = true; scrim.hidden = true; }, 300); // match CSS transition
   }
 
   function scheduleNext(delayMs) {
@@ -327,12 +344,13 @@ function initLeadPopup() {
     sessionStorage.setItem(DISMISS_COUNT_KEY, String(shownCount));
     hidePopup();
     if (shownCount < MAX_SHOWS_PER_SESSION) {
-      scheduleNext(randomBetween(90000, 180000)); // 1.5–3 min later
+      scheduleNext(randomBetween(60000, 120000)); // 1–2 min later, from a different random spot
     }
   }
 
   document.getElementById('leadPopupClose').addEventListener('click', dismiss);
   document.getElementById('leadPopupSkip').addEventListener('click', dismiss);
+  scrim.addEventListener('click', dismiss); // clicking the dimmed backdrop also dismisses
 
   const form = document.getElementById('leadPopupForm');
   const status = document.getElementById('leadPopupStatus');
@@ -363,8 +381,8 @@ function initLeadPopup() {
     }
   });
 
-  // First appearance: random delay so it doesn't feel like a scripted
-  // trigger tied to a specific scroll position or timer everyone hits
-  // at the same instant.
-  scheduleNext(randomBetween(20000, 45000));
+  // First appearance: near-instant so it's not missed, but still a
+  // touch staggered (1.5–3.5s) so it doesn't feel like a jarring
+  // flash the moment the page paints.
+  scheduleNext(randomBetween(1500, 3500));
 }
