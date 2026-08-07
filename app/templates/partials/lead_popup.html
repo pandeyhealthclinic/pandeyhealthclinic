@@ -1,10 +1,14 @@
 <!--
-  Lead-capture popup — deliberately NOT a full-screen modal.
-  It slides in from the corner, has no backdrop, and never blocks
-  clicks/scroll on the rest of the page. Timing/visibility logic
-  lives in main.js (initLeadPopup). Submits to /leads/capture.
+  Lead-capture popup. Bigger and more noticeable than a small corner
+  card, with a soft dim scrim behind it so it reads as a real popup —
+  but it's still one click (the scrim, ×, or "no thanks") to dismiss
+  and get straight back to browsing. main.js picks a random position
+  variant (center / top / top-right / bottom-right / bottom-left)
+  each time it shows and toggles the matching class on #leadPopup.
+  Submits to /leads/capture.
 -->
-<div id="leadPopup" class="lead-popup" role="complementary" aria-label="Request a callback" hidden>
+<div id="leadPopupScrim" class="lead-popup-scrim"></div>
+<div id="leadPopup" class="lead-popup lead-popup--center" role="dialog" aria-label="Request a callback" hidden>
   <button type="button" class="lead-popup-close" id="leadPopupClose" aria-label="Close">×</button>
   <div class="lead-popup-body">
     <p class="lead-popup-eyebrow">Quick Question</p>
