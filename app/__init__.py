@@ -61,6 +61,29 @@ def register_template_globals(app):
         """True if `endpoint` is a registered route on this app."""
         return endpoint in app.view_functions
 
+    @app.template_global()
+    def versioned_static(filename):
+        """url_for('static', ...) with a ?v=<file mtime> cache-buster.
+
+        Without this, browsers (and Render's own layer) can hang onto an
+        old cached copy of style.css/main.js across a deploy — this is
+        what caused the whole site to render completely unstyled after
+        an update (the browser kept serving a stale/empty cached
+        response instead of fetching the new file). Appending the
+        file's real last-modified time to the URL means any change to
+        the file produces a new URL, so old cached copies are never
+        reused.
+        """
+        import os
+        from flask import url_for
+
+        try:
+            file_path = os.path.join(app.static_folder, filename)
+            version = int(os.path.getmtime(file_path))
+        except OSError:
+            version = 0
+        return f"{url_for('static', filename=filename)}?v={version}"
+
 
 def register_blueprints(app):
     from app.blueprints.main.routes import main_bp
